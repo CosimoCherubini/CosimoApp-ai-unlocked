@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Travel AI — Hotels Feature Analytics</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f4f8;
+      color: #1a202c;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a56db 0%, #0e3a8a 100%);
+      color: white;
+      padding: 2rem 2rem 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    header .header-text .feature-tag {
+      display: inline-block;
+      background: rgba(255,255,255,0.18);
+      border-radius: 20px;
+      padding: 0.2rem 0.75rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+    header .header-text h1 { font-size: 1.8rem; font-weight: 800; }
+    header .header-text p  { font-size: 0.95rem; opacity: 0.8; margin-top: 0.2rem; }
+    header a {
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      font-size: 0.9rem;
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 6px;
+      padding: 0.4rem 0.9rem;
+      white-space: nowrap;
+    }
+    header a:hover { background: rgba(255,255,255,0.1); }
+
+    .dashboard {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 3rem;
+    }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .kpi {
+      background: white;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .kpi-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: #718096; font-weight: 600; }
+    .kpi-value { font-size: 2.1rem; font-weight: 800; color: #1a202c; margin: 0.25rem 0; line-height: 1; }
+    .kpi-sub   { font-size: 0.82rem; color: #a0aec0; }
+    .kpi-trend { font-size: 0.82rem; font-weight: 700; margin-top: 0.3rem; }
+    .up   { color: #38a169; }
+    .down { color: #e53e3e; }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+      gap: 1.5rem;
+    }
+    .chart-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .chart-card h2 { font-size: 1rem; font-weight: 700; color: #2d3748; margin-bottom: 0.3rem; }
+    .chart-desc    { font-size: 0.82rem; color: #a0aec0; margin-bottom: 1.2rem; }
+    .chart-wrap    { position: relative; height: 240px; }
+
+    @media (max-width: 600px) {
+      .charts-grid { grid-template-columns: 1fr; }
+      .kpi-value   { font-size: 1.7rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-text">
+    <div class="feature-tag">Feature Analytics</div>
+    <h1>Hotels</h1>
+    <p>Goal: help users find and book the right hotel at the best price</p>
+  </div>
+  <a href="../index.html">← Back</a>
+</header>
+
+<div class="dashboard">
+
+  <!-- KPI Strip -->
+  <div class="kpi-row">
+
+    <div class="kpi">
+      <div class="kpi-label">Search-to-Click Rate</div>
+      <div class="kpi-value">54%</div>
+      <div class="kpi-sub">searches leading to a hotel click</div>
+      <div class="kpi-trend up">↑ +4% vs last month</div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-label">Click-to-Book Rate</div>
+      <div class="kpi-value">12.3%</div>
+      <div class="kpi-sub">clicks resulting in a booking</div>
+      <div class="kpi-trend up">↑ +1.1% vs last month</div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-label">Price Filter Usage</div>
+      <div class="kpi-value">41%</div>
+      <div class="kpi-sub">searches using price filters</div>
+      <div class="kpi-trend up">↑ +6% vs last month</div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-label">Avg. Results Scrolled</div>
+      <div class="kpi-value">7.2</div>
+      <div class="kpi-sub">hotels viewed before a click</div>
+      <div class="kpi-trend down">↓ down from 9.1</div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-label">Zero-Results Rate</div>
+      <div class="kpi-value">5.8%</div>
+      <div class="kpi-sub">searches with no available hotels</div>
+      <div class="kpi-trend up">↑ improved from 7.4%</div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-label">Price Match Confidence</div>
+      <div class="kpi-value">78%</div>
+      <div class="kpi-sub">users who feel they got the best price</div>
+      <div class="kpi-trend up">↑ +3% vs last month</div>
+    </div>
+
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-grid">
+
+    <div class="chart-card">
+      <h2>Search-to-Book Funnel — Last 8 Weeks</h2>
+      <div class="chart-desc">Weekly conversion at each stage of the hotel booking journey</div>
+      <div class="chart-wrap"><canvas id="funnelChart"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <h2>Top Booked Hotel Categories</h2>
+      <div class="chart-desc">Breakdown of bookings by accommodation type</div>
+      <div class="chart-wrap"><canvas id="categoryChart"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <h2>Click-to-Book Rate — Last 8 Weeks</h2>
+      <div class="chart-desc">% of hotel detail page visits that result in a booking</div>
+      <div class="chart-wrap"><canvas id="conversionChart"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <h2>Filter Usage Breakdown</h2>
+      <div class="chart-desc">Which filters users apply most when searching hotels</div>
+      <div class="chart-wrap"><canvas id="filtersChart"></canvas></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const weeks = ['Wk 1','Wk 2','Wk 3','Wk 4','Wk 5','Wk 6','Wk 7','Wk 8'];
+  const blue = '#1a56db';
+  const lightBlue = 'rgba(26,86,219,0.12)';
+
+  // Funnel chart (grouped bar)
+  new Chart(document.getElementById('funnelChart'), {
+    type: 'bar',
+    data: {
+      labels: weeks,
+      datasets: [
+        {
+          label: 'Searches',
+          data: [100, 100, 100, 100, 100, 100, 100, 100],
+          backgroundColor: '#bfdbfe',
+          borderRadius: 4,
+        },
+        {
+          label: 'Hotel Clicks',
+          data: [48, 49, 50, 51, 51, 52, 53, 54],
+          backgroundColor: '#3b82f6',
+          borderRadius: 4,
+        },
+        {
+          label: 'Bookings',
+          data: [5.1, 5.4, 5.8, 6.2, 6.5, 6.9, 7.4, 12.3],
+          backgroundColor: blue,
+          borderRadius: 4,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 12 } } },
+      scales: {
+        y: { ticks: { callback: v => v + '%' }, grid: { color: '#f0f4f8' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Category doughnut
+  new Chart(document.getElementById('categoryChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['City Hotel', 'Resort', 'Boutique', 'Hostel', 'Apartment', 'B&B'],
+      datasets: [{
+        data: [38, 22, 17, 10, 8, 5],
+        backgroundColor: ['#1a56db','#3b82f6','#60a5fa','#93c5fd','#bfdbfe','#dbeafe'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { font: { size: 12 }, boxWidth: 14 } }
+      },
+      cutout: '60%'
+    }
+  });
+
+  // Click-to-book rate line
+  new Chart(document.getElementById('conversionChart'), {
+    type: 'line',
+    data: {
+      labels: weeks,
+      datasets: [{
+        label: 'Click-to-Book %',
+        data: [9.8, 10.1, 10.4, 10.8, 11.2, 11.5, 11.9, 12.3],
+        borderColor: blue,
+        backgroundColor: lightBlue,
+        borderWidth: 2.5,
+        pointRadius: 4,
+        pointBackgroundColor: blue,
+        fill: true,
+        tension: 0.35
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { min: 6, max: 16, ticks: { callback: v => v + '%' }, grid: { color: '#f0f4f8' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Filter usage horizontal bar
+  new Chart(document.getElementById('filtersChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Price range', 'Star rating', 'Free cancellation', 'Breakfast included', 'Distance to centre', 'Guest rating'],
+      datasets: [{
+        label: '% of searches',
+        data: [41, 35, 29, 24, 19, 14],
+        backgroundColor: ['#1a56db','#3b82f6','#60a5fa','#93c5fd','#bfdbfe','#dbeafe'],
+        borderRadius: 6,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { max: 60, ticks: { callback: v => v + '%' }, grid: { color: '#f0f4f8' } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+</script>
+
+</body>
+</html>
