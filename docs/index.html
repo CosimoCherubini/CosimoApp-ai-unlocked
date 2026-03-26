@@ -256,6 +256,21 @@
       events.push({ type, ...payload, ts: Date.now() });
       localStorage.setItem('travel_ai_events', JSON.stringify(events));
     }
+
+    // ── Slack alert (fire-and-forget, won't block the UI) ───────
+    const WORKER_URL = 'https://YOUR-WORKER-URL.workers.dev/search-alert';
+    async function sendSearchAlert(city) {
+      if (!city || WORKER_URL.includes('YOUR-WORKER-URL')) return;
+      try {
+        await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ city }),
+        });
+      } catch (e) {
+        console.error('Slack alert failed:', e);
+      }
+    }
     // ───────────────────────────────────────────────────────────
 
     const CLAUDE_API = 'https://api.anthropic.com/v1/messages';
@@ -304,6 +319,7 @@
 
       try {
         trackEvent('search', { city });
+        sendSearchAlert(city);
         const data = apiKey
           ? await fetchFromClaude(city, apiKey)
           : getMockData(city);

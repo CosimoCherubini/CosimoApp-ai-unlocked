@@ -1,0 +1,6 @@
+name = "travel-ai-alerts"
+main = "index.js"
+compatibility_date = "2024-01-01"
+
+# Deploy with:  npx wrangler deploy
+# Set secret:   npx wrangler secret put SLACK_WEBHOOK_URL
