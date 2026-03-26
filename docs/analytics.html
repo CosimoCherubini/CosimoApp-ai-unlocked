@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Travel AI — Analytics</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f4f8;
+      color: #1a202c;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a56db 0%, #0e3a8a 100%);
+      color: white;
+      padding: 2rem 2rem 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    header h1 { font-size: 1.8rem; font-weight: 800; }
+    header p  { font-size: 0.95rem; opacity: 0.8; margin-top: 0.2rem; }
+    header a  {
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      font-size: 0.9rem;
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 6px;
+      padding: 0.4rem 0.9rem;
+    }
+    header a:hover { background: rgba(255,255,255,0.1); }
+
+    .dashboard {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 3rem;
+    }
+
+    /* ── KPI strip ── */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .kpi {
+      background: white;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .kpi-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: #718096; font-weight: 600; }
+    .kpi-value { font-size: 2.2rem; font-weight: 800; color: #1a202c; margin: 0.2rem 0; line-height: 1; }
+    .kpi-sub   { font-size: 0.82rem; color: #a0aec0; }
+
+    /* ── Chart grid ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 768px) { .charts-grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      padding: 1.5rem;
+    }
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card-full { grid-column: 1 / -1; }
+
+    .chart-wrap { position: relative; height: 260px; }
+    .chart-wrap-sm { position: relative; height: 240px; }
+
+    /* ── City table ── */
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th {
+      text-align: left;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #718096;
+      font-weight: 600;
+      padding: 0 0 0.75rem;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    td { padding: 0.65rem 0; border-bottom: 1px solid #f0f4f8; color: #2d3748; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    .bar-cell { display: flex; align-items: center; gap: 0.75rem; }
+    .bar-track { flex: 1; background: #e2e8f0; border-radius: 99px; height: 8px; overflow: hidden; }
+    .bar-fill  { height: 100%; border-radius: 99px; background: #1a56db; transition: width 0.6s ease; }
+    .bar-pct   { font-size: 0.8rem; color: #718096; min-width: 2.5rem; text-align: right; }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 99px;
+      background: #ebf4ff;
+      color: #1a56db;
+    }
+
+    /* ── Data note ── */
+    .data-note {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #a0aec0;
+      margin-top: 1.5rem;
+    }
+    .data-note span {
+      background: #fef3c7;
+      color: #92400e;
+      border-radius: 4px;
+      padding: 0.1rem 0.4rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📊 Analytics Dashboard</h1>
+    <p>Travel AI — usage insights</p>
+  </div>
+  <a href="index.html">← Back to App</a>
+</header>
+
+<div class="dashboard">
+
+  <!-- KPIs -->
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <!-- Charts -->
+  <div class="charts-grid">
+    <div class="card card-full">
+      <h2>🌍 Top Cities Searched</h2>
+      <table id="cityTable">
+        <thead><tr><th>#</th><th>City</th><th>Searches</th><th>Share</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>🖱️ Module Click-Through Rate</h2>
+      <div class="chart-wrap"><canvas id="ctrChart"></canvas></div>
+    </div>
+
+    <div class="card">
+      <h2>📅 Searches Over Time (last 14 days)</h2>
+      <div class="chart-wrap"><canvas id="timeChart"></canvas></div>
+    </div>
+  </div>
+
+  <p class="data-note">
+    Showing <span id="dataNote"></span> — live events tracked in this browser are merged with seeded demo data.
+  </p>
+</div>
+
+<script>
+  // ── Dummy seed data ─────────────────────────────────────────────────────────
+  const SEED_SEARCHES = [
+    { city: 'London',        count: 142 },
+    { city: 'Paris',         count: 118 },
+    { city: 'Barcelona',     count: 97  },
+    { city: 'Tokyo',         count: 83  },
+    { city: 'New York',      count: 76  },
+    { city: 'Rome',          count: 64  },
+    { city: 'Amsterdam',     count: 52  },
+    { city: 'Lisbon',        count: 48  },
+    { city: 'Berlin',        count: 39  },
+    { city: 'Dubai',         count: 31  },
+  ];
+
+  const SEED_CLICKS = { activities: 1840, restaurants: 2310, walks: 1120 };
+
+  // Seed timeline: last 14 days of search counts
+  const SEED_TIMELINE = [18, 24, 19, 31, 27, 42, 38, 22, 29, 35, 41, 44, 37, 51];
+
+  // ── Read real events from localStorage ────────────────────────────────────
+  const rawEvents = JSON.parse(localStorage.getItem('travel_ai_events') || '[]');
+  const realSearches = rawEvents.filter(e => e.type === 'search');
+  const realClicks   = rawEvents.filter(e => e.type === 'click');
+
+  // Merge city counts
+  const cityMap = {};
+  SEED_SEARCHES.forEach(({ city, count }) => { cityMap[city] = count; });
+  realSearches.forEach(({ city }) => {
+    const key = city.trim().replace(/\b\w/g, c => c.toUpperCase());
+    cityMap[key] = (cityMap[key] || 0) + 1;
+  });
+  const cityRanking = Object.entries(cityMap)
+    .map(([city, count]) => ({ city, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
+
+  // Merge module clicks
+  const clickMap = { ...SEED_CLICKS };
+  realClicks.forEach(({ module }) => { if (clickMap[module] !== undefined) clickMap[module]++; });
+
+  // Merge timeline (bucket real searches into last 14 days)
+  const timeline = [...SEED_TIMELINE];
+  const now = Date.now();
+  realSearches.forEach(({ ts }) => {
+    const daysAgo = Math.floor((now - ts) / 86400000);
+    if (daysAgo < 14) timeline[13 - daysAgo]++;
+  });
+
+  // ── KPIs ───────────────────────────────────────────────────────────────────
+  const totalSearches = cityRanking.reduce((s, c) => s + c.count, 0);
+  const totalClicks   = Object.values(clickMap).reduce((a, b) => a + b, 0);
+  const topCity       = cityRanking[0]?.city ?? '—';
+  const topModule     = Object.entries(clickMap).sort((a,b) => b[1]-a[1])[0][0];
+  const moduleLabels  = { activities: 'Things To Do', restaurants: 'Where To Eat', walks: 'Walks & Runs' };
+
+  const kpis = [
+    { label: 'Total Searches',  value: totalSearches.toLocaleString(), sub: 'all time' },
+    { label: 'Total Item Clicks', value: totalClicks.toLocaleString(), sub: 'across all modules' },
+    { label: 'Top City',        value: topCity,  sub: `${cityRanking[0]?.count ?? 0} searches` },
+    { label: 'Top Module',      value: moduleLabels[topModule], sub: `${clickMap[topModule].toLocaleString()} clicks` },
+  ];
+
+  document.getElementById('kpiRow').innerHTML = kpis.map(k => `
+    <div class="kpi">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.value}</div>
+      <div class="kpi-sub">${k.sub}</div>
+    </div>`).join('');
+
+  // ── City table ─────────────────────────────────────────────────────────────
+  const maxCount = cityRanking[0]?.count ?? 1;
+  const tbody = document.querySelector('#cityTable tbody');
+  tbody.innerHTML = cityRanking.map((c, i) => {
+    const pct = Math.round((c.count / totalSearches) * 100);
+    const barW = Math.round((c.count / maxCount) * 100);
+    return `<tr>
+      <td><span class="badge">${i + 1}</span></td>
+      <td><strong>${c.city}</strong></td>
+      <td>${c.count.toLocaleString()}</td>
+      <td style="width:45%">
+        <div class="bar-cell">
+          <div class="bar-track"><div class="bar-fill" style="width:${barW}%"></div></div>
+          <span class="bar-pct">${pct}%</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // ── CTR Chart (doughnut) ───────────────────────────────────────────────────
+  new Chart(document.getElementById('ctrChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Things To Do', 'Where To Eat', 'Walks & Runs'],
+      datasets: [{
+        data: [clickMap.activities, clickMap.restaurants, clickMap.walks],
+        backgroundColor: ['#1a56db', '#d97706', '#059669'],
+        borderWidth: 0,
+        hoverOffset: 8,
+      }],
+    },
+    options: {
+      cutout: '62%',
+      plugins: {
+        legend: { position: 'bottom', labels: { padding: 16, font: { size: 13 } } },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+              const pct = ((ctx.parsed / total) * 100).toFixed(1);
+              return ` ${ctx.parsed.toLocaleString()} clicks (${pct}%)`;
+            },
+          },
+        },
+      },
+    },
+  });
+
+  // ── Timeline Chart (line) ──────────────────────────────────────────────────
+  const dayLabels = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date(now - (13 - i) * 86400000);
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  });
+
+  new Chart(document.getElementById('timeChart'), {
+    type: 'line',
+    data: {
+      labels: dayLabels,
+      datasets: [{
+        label: 'Searches',
+        data: timeline,
+        borderColor: '#1a56db',
+        backgroundColor: 'rgba(26,86,219,0.08)',
+        borderWidth: 2.5,
+        pointRadius: 3,
+        pointBackgroundColor: '#1a56db',
+        fill: true,
+        tension: 0.35,
+      }],
+    },
+    options: {
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#f0f4f8' }, ticks: { precision: 0 } },
+        x: { grid: { display: false }, ticks: { maxRotation: 45 } },
+      },
+      plugins: { legend: { display: false } },
+    },
+  });
+
+  // ── Data note ─────────────────────────────────────────────────────────────
+  const liveCount = rawEvents.length;
+  document.getElementById('dataNote').textContent =
+    liveCount > 0
+      ? `seeded demo data + ${liveCount} live event${liveCount !== 1 ? 's' : ''} from this browser`
+      : 'seeded demo data (no live events yet — use the app to generate real data)';
+</script>
+
+</body>
+</html>
