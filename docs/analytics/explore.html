@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Travel AI — Explore Feature Analytics</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f4f8;
+      color: #1a202c;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a56db 0%, #0e3a8a 100%);
+      color: white;
+      padding: 2rem 2rem 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    header .header-text h1 { font-size: 1.8rem; font-weight: 800; }
+    header .header-text .feature-tag {
+      display: inline-block;
+      background: rgba(255,255,255,0.18);
+      border-radius: 20px;
+      padding: 0.2rem 0.75rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+    header .header-text p { font-size: 0.95rem; opacity: 0.8; margin-top: 0.2rem; }
+    header a {
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      font-size: 0.9rem;
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 6px;
+      padding: 0.4rem 0.9rem;
+      white-space: nowrap;
+    }
+    header a:hover { background: rgba(255,255,255,0.1); }
+
+    .dashboard {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 3rem;
+    }
+
+    /* KPI strip */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .kpi {
+      background: white;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .kpi-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: #718096; font-weight: 600; }
+    .kpi-value { font-size: 2.1rem; font-weight: 800; color: #1a202c; margin: 0.25rem 0; line-height: 1; }
+    .kpi-sub   { font-size: 0.82rem; color: #a0aec0; }
+    .kpi-trend { font-size: 0.82rem; font-weight: 700; margin-top: 0.3rem; }
+    .up   { color: #38a169; }
+    .down { color: #e53e3e; }
+
+    /* Charts grid */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+      gap: 1.5rem;
+    }
+    .chart-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .chart-card h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 0.3rem;
+    }
+    .chart-card .chart-desc {
+      font-size: 0.82rem;
+      color: #a0aec0;
+      margin-bottom: 1.2rem;
+    }
+    .chart-wrap { position: relative; height: 240px; }
+
+    @media (max-width: 600px) {
+      .charts-grid { grid-template-columns: 1fr; }
+      .kpi-value { font-size: 1.7rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-text">
+    <div class="feature-tag">Feature Analytics</div>
+    <h1>Explore</h1>
+    <p>Goal: provide answers to Users searching things to do in the city</p>
+  </div>
+  <a href="../index.html">← Back</a>
+</header>
+
+<div class="dashboard">
+
+  <!-- KPI Strip -->
+  <div class="kpi-row">
+
+    <div class="kpi">
+      <div class="kpi-label">Query Success Rate</div>
+      <div class="kpi-value">82%</div>
+      <div class="kpi-sub">searches with ≥1 result</div>
+      <div class="kpi-trend up">↑ +3% vs last month</div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-label">Zero-Results Rate</div>
+      <div class="kpi-value">8.4%</div>
+      <div class="kpi-sub">searches returning nothing</div>
+      <div class="kpi-trend up">↑ improved from 11.2%</div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-label">Result Click-Through</div>
+      <div class="kpi-value">67%</div>
+      <div class="kpi-sub">users who tap a suggestion</div>
+      <div class="kpi-trend up">↑ +5% vs last month</div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-label">Avg. Time to Answer</div>
+      <div class="kpi-value">1.8s</div>
+      <div class="kpi-sub">query → first result shown</div>
+      <div class="kpi-trend up">↑ down from 2.4s</div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-label">Repeat Searches / Session</div>
+      <div class="kpi-value">2.3</div>
+      <div class="kpi-sub">avg queries per visit</div>
+      <div class="kpi-trend up">↑ +0.4 vs last month</div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-label">AI Answer Satisfaction</div>
+      <div class="kpi-value">74%</div>
+      <div class="kpi-sub">thumbs-up on AI responses</div>
+      <div class="kpi-trend down">↓ -2% vs last month</div>
+    </div>
+
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-grid">
+
+    <!-- Query Success Rate over time -->
+    <div class="chart-card">
+      <h2>Query Success Rate — Last 8 Weeks</h2>
+      <div class="chart-desc">% of searches that returned at least one useful result</div>
+      <div class="chart-wrap">
+        <canvas id="successRateChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Top search categories -->
+    <div class="chart-card">
+      <h2>Top Search Categories</h2>
+      <div class="chart-desc">What users are looking for most in the Explore feature</div>
+      <div class="chart-wrap">
+        <canvas id="categoriesChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Zero-results trend -->
+    <div class="chart-card">
+      <h2>Zero-Results Rate — Last 8 Weeks</h2>
+      <div class="chart-desc">Searches that return no answer — lower is better</div>
+      <div class="chart-wrap">
+        <canvas id="zeroResultsChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Click-through & satisfaction breakdown -->
+    <div class="chart-card">
+      <h2>User Engagement Breakdown</h2>
+      <div class="chart-desc">What users do after receiving search results</div>
+      <div class="chart-wrap">
+        <canvas id="engagementChart"></canvas>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const weeks = ['Wk 1','Wk 2','Wk 3','Wk 4','Wk 5','Wk 6','Wk 7','Wk 8'];
+  const blue = '#1a56db';
+  const lightBlue = 'rgba(26,86,219,0.12)';
+
+  // Query Success Rate
+  new Chart(document.getElementById('successRateChart'), {
+    type: 'line',
+    data: {
+      labels: weeks,
+      datasets: [{
+        label: 'Success Rate %',
+        data: [74, 75, 77, 78, 79, 80, 81, 82],
+        borderColor: blue,
+        backgroundColor: lightBlue,
+        borderWidth: 2.5,
+        pointRadius: 4,
+        pointBackgroundColor: blue,
+        fill: true,
+        tension: 0.35
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { min: 60, max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#f0f4f8' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Top categories (doughnut)
+  new Chart(document.getElementById('categoriesChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Restaurants', 'Museums', 'Nightlife', 'Outdoor', 'Shopping', 'Events'],
+      datasets: [{
+        data: [31, 18, 16, 14, 12, 9],
+        backgroundColor: ['#1a56db','#3b82f6','#60a5fa','#93c5fd','#bfdbfe','#dbeafe'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { font: { size: 12 }, boxWidth: 14 } }
+      },
+      cutout: '60%'
+    }
+  });
+
+  // Zero-results trend
+  new Chart(document.getElementById('zeroResultsChart'), {
+    type: 'line',
+    data: {
+      labels: weeks,
+      datasets: [{
+        label: 'Zero-Results %',
+        data: [14.2, 13.1, 12.4, 11.8, 10.9, 9.7, 9.1, 8.4],
+        borderColor: '#e53e3e',
+        backgroundColor: 'rgba(229,62,62,0.08)',
+        borderWidth: 2.5,
+        pointRadius: 4,
+        pointBackgroundColor: '#e53e3e',
+        fill: true,
+        tension: 0.35
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { min: 0, max: 20, ticks: { callback: v => v + '%' }, grid: { color: '#f0f4f8' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Engagement breakdown (bar)
+  new Chart(document.getElementById('engagementChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Clicked a result', 'Refined search', 'Copied answer', 'Left without action'],
+      datasets: [{
+        label: '% of sessions',
+        data: [67, 18, 9, 6],
+        backgroundColor: ['#1a56db','#3b82f6','#60a5fa','#e2e8f0'],
+        borderRadius: 6,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#f0f4f8' } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+</script>
+
+</body>
+</html>
