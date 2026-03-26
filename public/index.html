@@ -24,13 +24,25 @@
     header h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; }
     header p  { font-size: 1.1rem; opacity: 0.85; }
 
+    /* ── Top section (search + game side by side) ── */
+    .top-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      max-width: 1100px;
+      margin: -1.75rem auto 2.5rem;
+      padding: 0 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 720px) {
+      .top-section { grid-template-columns: 1fr; }
+    }
+
     /* ── Search box ── */
     .search-wrapper {
       display: flex;
-      justify-content: center;
-      margin: -1.75rem auto 2.5rem;
-      padding: 0 1rem;
-      max-width: 560px;
+      flex-direction: column;
+      gap: 0.5rem;
     }
     .search-box {
       display: flex;
@@ -190,6 +202,128 @@
       border-radius: 0 4px 4px 0;
     }
     .item-tip::before { content: "Tip: "; font-weight: 600; }
+
+    /* ── GeoGuesser game ── */
+    .game-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+      overflow: hidden;
+    }
+    .game-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, #7c3aed 0%, #4f1d96 100%);
+      color: white;
+      padding: 0.85rem 1.25rem;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .game-progress {
+      font-size: 0.82rem;
+      opacity: 0.85;
+      font-weight: 500;
+    }
+    .game-body { padding: 1rem 1.25rem 1.25rem; }
+    .game-img-wrap {
+      width: 100%;
+      height: 180px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #e2e8f0;
+      margin-bottom: 0.75rem;
+      position: relative;
+    }
+    .game-img-wrap img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .game-img-wrap .img-fallback {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      font-size: 3.5rem;
+    }
+    .game-question {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #4a5568;
+      margin-bottom: 0.75rem;
+      text-align: center;
+    }
+    .game-landmark {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #1a202c;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .game-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .game-opt {
+      border: 2px solid #e2e8f0;
+      background: #f7fafc;
+      border-radius: 8px;
+      padding: 0.6rem 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #2d3748;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+      text-align: center;
+    }
+    .game-opt:hover:not(:disabled) { background: #ebf4ff; border-color: #7c3aed; transform: translateY(-1px); }
+    .game-opt:disabled { cursor: default; }
+    .game-opt.correct  { background: #f0fff4; border-color: #38a169; color: #276749; }
+    .game-opt.wrong    { background: #fff5f5; border-color: #e53e3e; color: #c53030; }
+    .game-feedback {
+      text-align: center;
+      font-size: 0.88rem;
+      font-weight: 600;
+      min-height: 1.3rem;
+      margin-bottom: 0.5rem;
+    }
+    .game-feedback.ok  { color: #38a169; }
+    .game-feedback.bad { color: #e53e3e; }
+    .game-next {
+      width: 100%;
+      background: #7c3aed;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.65rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .game-next:hover { background: #6d28d9; }
+    .game-final {
+      text-align: center;
+      padding: 0.5rem 0;
+    }
+    .game-final .final-emoji { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .game-final h3 { font-size: 1.2rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .game-final p  { color: #718096; font-size: 0.9rem; margin-bottom: 1rem; }
+    .game-restart {
+      background: #7c3aed;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.65rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .game-restart:hover { background: #6d28d9; }
   </style>
 </head>
 <body>
@@ -199,15 +333,27 @@
     <p>Enter a city and discover the best things to do, eat, and explore</p>
   </header>
 
-  <div class="search-wrapper">
-    <div class="search-box">
-      <input
-        type="text"
-        id="cityInput"
-        placeholder="e.g. London, Tokyo, Barcelona..."
-        autocomplete="off"
-      />
-      <button id="exploreBtn" onclick="explore()">Explore</button>
+  <div class="top-section">
+    <!-- Search -->
+    <div class="search-wrapper">
+      <div class="search-box">
+        <input
+          type="text"
+          id="cityInput"
+          placeholder="e.g. London, Tokyo, Barcelona..."
+          autocomplete="off"
+        />
+        <button id="exploreBtn" onclick="explore()">Explore</button>
+      </div>
+    </div>
+
+    <!-- GeoGuesser game -->
+    <div class="game-card">
+      <div class="game-header">
+        <span>🌍 GeoGuesser</span>
+        <span class="game-progress" id="gameProgress">1 / 10</span>
+      </div>
+      <div class="game-body" id="gameBody"></div>
     </div>
   </div>
 
@@ -335,6 +481,181 @@
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
     }
+  </script>
+
+  <script>
+    // ── GeoGuesser game ──
+    const ALL_QUESTIONS = [
+      {
+        landmark: 'Buckingham Palace',
+        city: 'London',
+        emoji: '🏰',
+        img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Buckingham_Palace%2C_London_-_April_2009.jpg/480px-Buckingham_Palace%2C_London_-_April_2009.jpg',
+        options: ['London', 'Edinburgh', 'Paris', 'Dublin'],
+      },
+      {
+        landmark: 'Eiffel Tower',
+        city: 'Paris',
+        emoji: '🗼',
+        img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Tour_eiffel_at_sunrise_from_the_trocadero.jpg/480px-Tour_eiffel_at_sunrise_from_the_trocadero.jpg',
+        options: ['Paris', 'Berlin', 'Brussels', 'Rome'],
+      },
+      {
+        landmark: 'Colosseum',
+        city: 'Rome',
+        emoji: '🏟️',
+        img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Colosseo_2020.jpg/480px-Colosseo_2020.jpg',
+        options: ['Rome', 'Athens', 'Istanbul', 'Cairo'],
+      },
+      {
+        landmark: 'Statue of Liberty',
+        city: 'New York',
+        emoji: '🗽',
+        img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Statue_of_Liberty_7.jpg/480px-Statue_of_Liberty_7.jpg',
+        options: ['New York', 'Boston', 'Paris', 'Sydney'],
+      },
+      {
+        landmark: 'Taj Mahal',
+        city: 'Agra',
+        emoji: '🕌',
+        img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Taj_Mahal%2C_Agra%2C_India_edit3.jpg/480px-Taj_Mahal%2C_Agra%2C_India_edit3.jpg',
+        options: ['Agra', 'Delhi', 'Dubai', 'Istanbul'],
+      },
+      {
+        landmark: 'Sydney Opera House',
+        city: 'Sydney',
+        emoji: '🎭',
+        img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Sydney_Australia._%2821339175489%29.jpg/480px-Sydney_Australia._%2821339175489%29.jpg',
+        options: ['Sydney', 'Melbourne', 'Auckland', 'Singapore'],
+      },
+      {
+        landmark: 'Big Ben',
+        city: 'London',
+        emoji: '🕐',
+        img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Clock_Tower_-_Palace_of_Westminster%2C_London_-_May_2007.jpg/480px-Clock_Tower_-_Palace_of_Westminster%2C_London_-_May_2007.jpg',
+        options: ['London', 'Amsterdam', 'Brussels', 'Vienna'],
+      },
+      {
+        landmark: 'Sagrada Família',
+        city: 'Barcelona',
+        emoji: '⛪',
+        img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Sagrada_Familia_01.jpg/480px-Sagrada_Familia_01.jpg',
+        options: ['Barcelona', 'Madrid', 'Lisbon', 'Valencia'],
+      },
+      {
+        landmark: 'Burj Khalifa',
+        city: 'Dubai',
+        emoji: '🏙️',
+        img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Burj_Khalifa.jpg/480px-Burj_Khalifa.jpg',
+        options: ['Dubai', 'Abu Dhabi', 'Doha', 'Riyadh'],
+      },
+      {
+        landmark: 'Acropolis',
+        city: 'Athens',
+        emoji: '🏛️',
+        img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/The_Parthenon_in_Athens.jpg/480px-The_Parthenon_in_Athens.jpg',
+        options: ['Athens', 'Rome', 'Cairo', 'Tunis'],
+      },
+    ];
+
+    let questions = [];
+    let currentQ = 0;
+    let score = 0;
+    let answered = false;
+
+    function shuffle(arr) {
+      return [...arr].sort(() => Math.random() - 0.5);
+    }
+
+    function startGame() {
+      questions = shuffle(ALL_QUESTIONS);
+      currentQ = 0;
+      score = 0;
+      answered = false;
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const q = questions[currentQ];
+      answered = false;
+      document.getElementById('gameProgress').textContent = `${currentQ + 1} / ${questions.length}`;
+
+      document.getElementById('gameBody').innerHTML = `
+        <div class="game-img-wrap">
+          <img
+            src="${escHtml(q.img)}"
+            alt="${escHtml(q.landmark)}"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+          />
+          <div class="img-fallback">${q.emoji}</div>
+        </div>
+        <div class="game-question">Where in the world is this?</div>
+        <div class="game-landmark">${escHtml(q.landmark)}</div>
+        <div class="game-options">
+          ${q.options.map(opt => `
+            <button class="game-opt" onclick="selectAnswer(this, '${escHtml(opt)}')">${escHtml(opt)}</button>
+          `).join('')}
+        </div>
+        <div class="game-feedback" id="gameFeedback"></div>
+      `;
+    }
+
+    function selectAnswer(btn, chosen) {
+      if (answered) return;
+      answered = true;
+      const q = questions[currentQ];
+      const isCorrect = chosen === q.city;
+      const allBtns = btn.closest('.game-options').querySelectorAll('.game-opt');
+
+      allBtns.forEach(b => {
+        b.disabled = true;
+        if (b.textContent === q.city) b.classList.add('correct');
+      });
+      if (!isCorrect) btn.classList.add('wrong');
+
+      if (isCorrect) score++;
+
+      const fb = document.getElementById('gameFeedback');
+      fb.className = 'game-feedback ' + (isCorrect ? 'ok' : 'bad');
+      fb.textContent = isCorrect ? '✓ Correct!' : `✗ It's ${q.city}`;
+
+      // Add next button
+      const nextLabel = currentQ + 1 < questions.length ? 'Next →' : 'See Results';
+      const nextEl = document.createElement('button');
+      nextEl.className = 'game-next';
+      nextEl.textContent = nextLabel;
+      nextEl.onclick = advanceGame;
+      document.getElementById('gameBody').appendChild(nextEl);
+    }
+
+    function advanceGame() {
+      currentQ++;
+      if (currentQ < questions.length) {
+        showQuestion();
+      } else {
+        showFinal();
+      }
+    }
+
+    function showFinal() {
+      document.getElementById('gameProgress').textContent = `Done!`;
+      const pct = score / questions.length;
+      const emoji = pct === 1 ? '🏆' : pct >= 0.7 ? '🌟' : pct >= 0.4 ? '🗺️' : '✈️';
+      const msg   = pct === 1 ? 'Perfect score!'
+                  : pct >= 0.7 ? 'Great geography skills!'
+                  : pct >= 0.4 ? 'Not bad, keep exploring!'
+                  : 'Time to travel more!';
+      document.getElementById('gameBody').innerHTML = `
+        <div class="game-final">
+          <div class="final-emoji">${emoji}</div>
+          <h3>${score} / ${questions.length} correct</h3>
+          <p>${msg}</p>
+          <button class="game-restart" onclick="startGame()">Play Again</button>
+        </div>
+      `;
+    }
+
+    startGame();
   </script>
 
 </body>
