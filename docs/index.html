@@ -24,13 +24,25 @@
     header h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; }
     header p  { font-size: 1.1rem; opacity: 0.85; }
 
+    /* ── Top section (search + game side by side) ── */
+    .top-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      max-width: 1100px;
+      margin: -1.75rem auto 2.5rem;
+      padding: 0 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 720px) {
+      .top-section { grid-template-columns: 1fr; }
+    }
+
     /* ── Search box ── */
     .search-wrapper {
       display: flex;
-      justify-content: center;
-      margin: -1.75rem auto 2.5rem;
-      padding: 0 1rem;
-      max-width: 560px;
+      flex-direction: column;
+      gap: 0.5rem;
     }
     .search-box {
       display: flex;
@@ -60,62 +72,8 @@
       transition: background 0.2s;
       white-space: nowrap;
     }
-    .search-box button:hover    { background: #1648bf; }
+    .search-box button:hover  { background: #1648bf; }
     .search-box button:disabled { background: #93c5fd; cursor: not-allowed; }
-
-    /* ── API key banner ── */
-    .key-banner {
-      max-width: 560px;
-      margin: 0 auto 2rem;
-      padding: 0 1rem;
-    }
-    .key-banner-inner {
-      background: #fffbeb;
-      border: 1px solid #fcd34d;
-      border-radius: 10px;
-      padding: 1rem 1.25rem;
-      font-size: 0.9rem;
-      color: #92400e;
-    }
-    .key-banner-inner strong { display: block; margin-bottom: 0.5rem; }
-    .key-row {
-      display: flex;
-      gap: 0.5rem;
-      margin-top: 0.5rem;
-    }
-    .key-row input {
-      flex: 1;
-      border: 1px solid #fcd34d;
-      border-radius: 6px;
-      padding: 0.45rem 0.75rem;
-      font-size: 0.9rem;
-      font-family: monospace;
-      outline: none;
-    }
-    .key-row input:focus { border-color: #f59e0b; }
-    .key-row button {
-      background: #d97706;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 0.45rem 1rem;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .key-row button:hover { background: #b45309; }
-    .key-saved {
-      display: none;
-      background: #f0fdf4;
-      border: 1px solid #86efac;
-      border-radius: 10px;
-      padding: 0.6rem 1rem;
-      font-size: 0.85rem;
-      color: #166534;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .key-saved a { color: #166534; font-size: 0.8rem; margin-left: auto; cursor: pointer; }
 
     /* ── Main content area ── */
     main {
@@ -130,9 +88,9 @@
       padding: 3rem 1rem;
       color: #718096;
     }
-    .state-message .icon { font-size: 3rem; margin-bottom: 1rem; }
-    .state-message h2   { font-size: 1.4rem; font-weight: 600; margin-bottom: 0.5rem; color: #4a5568; }
-    .state-message p    { font-size: 1rem; }
+    .state-message .icon  { font-size: 3rem; margin-bottom: 1rem; }
+    .state-message h2     { font-size: 1.4rem; font-weight: 600; margin-bottom: 0.5rem; color: #4a5568; }
+    .state-message p      { font-size: 1rem; }
 
     .error-box {
       background: #fff5f5;
@@ -146,7 +104,10 @@
     }
 
     /* ── Spinner ── */
-    .spinner-wrap { text-align: center; padding: 3rem 1rem; }
+    .spinner-wrap {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
     .spinner {
       width: 48px; height: 48px;
       border: 4px solid #e2e8f0;
@@ -159,9 +120,19 @@
     .spinner-wrap p { color: #718096; font-size: 1rem; }
 
     /* ── City heading ── */
-    .city-heading { text-align: center; margin-bottom: 2rem; }
-    .city-heading h2 { font-size: 2rem; font-weight: 800; color: #1a56db; }
-    .city-heading p  { color: #718096; margin-top: 0.25rem; }
+    .city-heading {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .city-heading h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #1a56db;
+    }
+    .city-heading p {
+      color: #718096;
+      margin-top: 0.25rem;
+    }
 
     /* ── Results grid ── */
     .results-grid {
@@ -187,27 +158,172 @@
       color: white;
     }
     .category-header .icon { font-size: 1.4rem; }
+
     .category-header.activities  { background: #1a56db; }
     .category-header.restaurants { background: #d97706; }
     .category-header.walks       { background: #059669; }
 
+    /* ── Item list ── */
     .item-list { padding: 0.5rem 0; }
     .item {
       padding: 0.9rem 1.25rem;
       border-bottom: 1px solid #f0f4f8;
     }
     .item:last-child { border-bottom: none; }
-    .item-name        { font-weight: 700; font-size: 0.95rem; color: #1a202c; margin-bottom: 0.2rem; }
-    .item-meta        { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.3rem; }
+
+    .item-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #1a202c;
+      margin-bottom: 0.2rem;
+    }
+    .item-meta {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.3rem;
+    }
     .item-meta.cuisine  { color: #d97706; }
     .item-meta.distance { color: #059669; }
-    .item-description { font-size: 0.88rem; color: #4a5568; line-height: 1.45; margin-bottom: 0.4rem; }
+
+    .item-description {
+      font-size: 0.88rem;
+      color: #4a5568;
+      line-height: 1.45;
+      margin-bottom: 0.4rem;
+    }
     .item-tip {
-      font-size: 0.82rem; color: #718096;
-      background: #f7fafc; border-left: 3px solid #cbd5e0;
-      padding: 0.3rem 0.6rem; border-radius: 0 4px 4px 0;
+      font-size: 0.82rem;
+      color: #718096;
+      background: #f7fafc;
+      border-left: 3px solid #cbd5e0;
+      padding: 0.3rem 0.6rem;
+      border-radius: 0 4px 4px 0;
     }
     .item-tip::before { content: "Tip: "; font-weight: 600; }
+
+    /* ── GeoGuesser game ── */
+    .game-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+      overflow: hidden;
+    }
+    .game-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, #7c3aed 0%, #4f1d96 100%);
+      color: white;
+      padding: 0.85rem 1.25rem;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .game-progress {
+      font-size: 0.82rem;
+      opacity: 0.85;
+      font-weight: 500;
+    }
+    .game-body { padding: 1rem 1.25rem 1.25rem; }
+    .game-img-wrap {
+      width: 100%;
+      height: 180px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #e2e8f0;
+      margin-bottom: 0.75rem;
+      position: relative;
+    }
+    .game-img-wrap img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .game-img-wrap .img-fallback {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      font-size: 3.5rem;
+    }
+    .game-question {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #4a5568;
+      margin-bottom: 0.75rem;
+      text-align: center;
+    }
+    .game-landmark {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #1a202c;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .game-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .game-opt {
+      border: 2px solid #e2e8f0;
+      background: #f7fafc;
+      border-radius: 8px;
+      padding: 0.6rem 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #2d3748;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+      text-align: center;
+    }
+    .game-opt:hover:not(:disabled) { background: #ebf4ff; border-color: #7c3aed; transform: translateY(-1px); }
+    .game-opt:disabled { cursor: default; }
+    .game-opt.correct  { background: #f0fff4; border-color: #38a169; color: #276749; }
+    .game-opt.wrong    { background: #fff5f5; border-color: #e53e3e; color: #c53030; }
+    .game-feedback {
+      text-align: center;
+      font-size: 0.88rem;
+      font-weight: 600;
+      min-height: 1.3rem;
+      margin-bottom: 0.5rem;
+    }
+    .game-feedback.ok  { color: #38a169; }
+    .game-feedback.bad { color: #e53e3e; }
+    .game-next {
+      width: 100%;
+      background: #7c3aed;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.65rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .game-next:hover { background: #6d28d9; }
+    .game-final {
+      text-align: center;
+      padding: 0.5rem 0;
+    }
+    .game-final .final-emoji { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .game-final h3 { font-size: 1.2rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .game-final p  { color: #718096; font-size: 0.9rem; margin-bottom: 1rem; }
+    .game-restart {
+      background: #7c3aed;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.65rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .game-restart:hover { background: #6d28d9; }
   </style>
 </head>
 <body>
@@ -215,29 +331,29 @@
   <header>
     <h1>Where to next?</h1>
     <p>Enter a city and discover the best things to do, eat, and explore</p>
-    <a href="analytics.html" style="display:inline-block;margin-top:1rem;font-size:0.85rem;color:rgba(255,255,255,0.75);text-decoration:none;border:1px solid rgba(255,255,255,0.35);border-radius:6px;padding:0.3rem 0.8rem;">📊 Analytics</a>
   </header>
 
-  <div class="search-wrapper">
-    <div class="search-box">
-      <input type="text" id="cityInput" placeholder="e.g. London, Tokyo, Barcelona..." autocomplete="off" />
-      <button id="exploreBtn" onclick="explore()">Explore</button>
-    </div>
-  </div>
-
-  <!-- API key section -->
-  <div class="key-banner" id="keyBanner">
-    <div class="key-banner-inner" id="keyForm">
-      <strong>Add your Anthropic API key to get live AI results</strong>
-      Your key is stored only in this browser session and never sent anywhere except the Claude API.
-      <div class="key-row">
-        <input type="password" id="keyInput" placeholder="sk-ant-..." />
-        <button onclick="saveKey()">Save</button>
+  <div class="top-section">
+    <!-- Search -->
+    <div class="search-wrapper">
+      <div class="search-box">
+        <input
+          type="text"
+          id="cityInput"
+          placeholder="e.g. London, Tokyo, Barcelona..."
+          autocomplete="off"
+        />
+        <button id="exploreBtn" onclick="explore()">Explore</button>
       </div>
     </div>
-    <div class="key-saved" id="keySaved">
-      ✅ API key saved — results are powered by Claude AI
-      <a onclick="clearKey()">(clear)</a>
+
+    <!-- GeoGuesser game -->
+    <div class="game-card">
+      <div class="game-header">
+        <span>🌍 GeoGuesser</span>
+        <span class="game-progress" id="gameProgress">1 / 10</span>
+      </div>
+      <div class="game-body" id="gameBody"></div>
     </div>
   </div>
 
@@ -250,120 +366,45 @@
   </main>
 
   <script>
-    // ── Analytics ──────────────────────────────────────────────
-    function trackEvent(type, payload) {
-      const events = JSON.parse(localStorage.getItem('travel_ai_events') || '[]');
-      events.push({ type, ...payload, ts: Date.now() });
-      localStorage.setItem('travel_ai_events', JSON.stringify(events));
-    }
+    const input = document.getElementById('cityInput');
+    const btn   = document.getElementById('exploreBtn');
+    const main  = document.getElementById('main');
 
-    // ── Slack alert (fire-and-forget, won't block the UI) ───────
-    const WORKER_URL = 'https://YOUR-WORKER-URL.workers.dev/search-alert';
-    async function sendSearchAlert(city) {
-      if (!city || WORKER_URL.includes('YOUR-WORKER-URL')) return;
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') explore();
+    });
+
+    async function explore() {
+      const city = input.value.trim();
+      if (!city) {
+        input.focus();
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Searching...';
+      showSpinner(city);
+
       try {
-        await fetch(WORKER_URL, {
+        const res  = await fetch('/api/explore', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ city }),
         });
-      } catch (e) {
-        console.error('Slack alert failed:', e);
-      }
-    }
-    // ───────────────────────────────────────────────────────────
+        const data = await res.json();
 
-    const CLAUDE_API = 'https://api.anthropic.com/v1/messages';
-    const cityInput  = document.getElementById('cityInput');
-    const exploreBtn = document.getElementById('exploreBtn');
-    const main       = document.getElementById('main');
-    const keyInput   = document.getElementById('keyInput');
+        if (!res.ok) {
+          showError(data.error || 'Something went wrong. Please try again.');
+          return;
+        }
 
-    // Restore key from sessionStorage
-    if (sessionStorage.getItem('anthropic_key')) showKeySaved();
-
-    cityInput.addEventListener('keydown', e => { if (e.key === 'Enter') explore(); });
-    keyInput.addEventListener('keydown',  e => { if (e.key === 'Enter') saveKey(); });
-
-    function saveKey() {
-      const key = keyInput.value.trim();
-      if (!key.startsWith('sk-ant-')) {
-        alert('That doesn\'t look like a valid Anthropic API key (should start with sk-ant-)');
-        return;
-      }
-      sessionStorage.setItem('anthropic_key', key);
-      showKeySaved();
-    }
-
-    function clearKey() {
-      sessionStorage.removeItem('anthropic_key');
-      document.getElementById('keyForm').style.display = 'block';
-      document.getElementById('keySaved').style.display = 'none';
-      keyInput.value = '';
-    }
-
-    function showKeySaved() {
-      document.getElementById('keyForm').style.display = 'none';
-      document.getElementById('keySaved').style.display = 'flex';
-    }
-
-    async function explore() {
-      const city = cityInput.value.trim();
-      if (!city) { cityInput.focus(); return; }
-
-      exploreBtn.disabled = true;
-      exploreBtn.textContent = 'Searching...';
-      showSpinner(city);
-
-      const apiKey = sessionStorage.getItem('anthropic_key');
-
-      try {
-        trackEvent('search', { city });
-        sendSearchAlert(city);
-        const data = apiKey
-          ? await fetchFromClaude(city, apiKey)
-          : getMockData(city);
         renderResults(data);
       } catch (err) {
-        showError(err.message || 'Something went wrong. Please try again.');
+        showError('Could not reach the server. Make sure it is running.');
       } finally {
-        exploreBtn.disabled = false;
-        exploreBtn.textContent = 'Explore';
+        btn.disabled = false;
+        btn.textContent = 'Explore';
       }
-    }
-
-    async function fetchFromClaude(city, apiKey) {
-      const prompt = `You are an expert travel guide. For the city "${city}", provide travel recommendations in this exact JSON format (no markdown, raw JSON only):
-{
-  "city": "Full city name",
-  "activities": [{ "name": "...", "description": "...", "tip": "..." }],
-  "restaurants": [{ "name": "...", "cuisine": "...", "description": "...", "tip": "..." }],
-  "walks": [{ "name": "...", "distance": "...", "description": "...", "tip": "..." }]
-}
-Rules: exactly 5 items per category, descriptions 1-2 sentences, tips practical and specific, return JSON only.`;
-
-      const res = await fetch(CLAUDE_API, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 2048,
-          messages: [{ role: 'user', content: prompt }],
-        }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err?.error?.message || `API error ${res.status}`);
-      }
-
-      const result = await res.json();
-      return JSON.parse(result.content[0].text.trim());
     }
 
     function showSpinner(city) {
@@ -385,9 +426,9 @@ Rules: exactly 5 items per category, descriptions 1-2 sentences, tips practical 
           <p>Here's what we recommend</p>
         </div>
         <div class="results-grid">
-          ${renderCard('activities',  '🏛️', 'Things To Do',  data.activities,  renderActivity)}
-          ${renderCard('restaurants', '🍽️', 'Where To Eat',  data.restaurants, renderRestaurant)}
-          ${renderCard('walks',       '🌿', 'Walks & Runs',  data.walks,       renderWalk)}
+          ${renderCard('activities',  '🏛️',  'Things To Do',      data.activities,  renderActivity)}
+          ${renderCard('restaurants', '🍽️',  'Where To Eat',      data.restaurants, renderRestaurant)}
+          ${renderCard('walks',       '🌿',  'Walks & Runs',      data.walks,       renderWalk)}
         </div>`;
     }
 
@@ -395,68 +436,226 @@ Rules: exactly 5 items per category, descriptions 1-2 sentences, tips practical 
       return `
         <div class="category-card">
           <div class="category-header ${type}">
-            <span class="icon">${icon}</span><span>${title}</span>
+            <span class="icon">${icon}</span>
+            <span>${title}</span>
           </div>
-          <div class="item-list">${(items || []).map(renderItem).join('')}</div>
+          <div class="item-list">
+            ${(items || []).map(renderItem).join('')}
+          </div>
         </div>`;
     }
 
-    function renderActivity(i) {
-      return `<div class="item" onclick="trackEvent('click', {module:'activities'})">
-        <div class="item-name">${escHtml(i.name)}</div>
-        <div class="item-description">${escHtml(i.description)}</div>
-        <div class="item-tip">${escHtml(i.tip)}</div>
-      </div>`;
+    function renderActivity(item) {
+      return `
+        <div class="item">
+          <div class="item-name">${escHtml(item.name)}</div>
+          <div class="item-description">${escHtml(item.description)}</div>
+          <div class="item-tip">${escHtml(item.tip)}</div>
+        </div>`;
     }
-    function renderRestaurant(i) {
-      return `<div class="item" onclick="trackEvent('click', {module:'restaurants'})">
-        <div class="item-name">${escHtml(i.name)}</div>
-        <div class="item-meta cuisine">${escHtml(i.cuisine)}</div>
-        <div class="item-description">${escHtml(i.description)}</div>
-        <div class="item-tip">${escHtml(i.tip)}</div>
-      </div>`;
+
+    function renderRestaurant(item) {
+      return `
+        <div class="item">
+          <div class="item-name">${escHtml(item.name)}</div>
+          <div class="item-meta cuisine">${escHtml(item.cuisine)}</div>
+          <div class="item-description">${escHtml(item.description)}</div>
+          <div class="item-tip">${escHtml(item.tip)}</div>
+        </div>`;
     }
-    function renderWalk(i) {
-      return `<div class="item" onclick="trackEvent('click', {module:'walks'})">
-        <div class="item-name">${escHtml(i.name)}</div>
-        <div class="item-meta distance">${escHtml(i.distance)}</div>
-        <div class="item-description">${escHtml(i.description)}</div>
-        <div class="item-tip">${escHtml(i.tip)}</div>
-      </div>`;
+
+    function renderWalk(item) {
+      return `
+        <div class="item">
+          <div class="item-name">${escHtml(item.name)}</div>
+          <div class="item-meta distance">${escHtml(item.distance)}</div>
+          <div class="item-description">${escHtml(item.description)}</div>
+          <div class="item-tip">${escHtml(item.tip)}</div>
+        </div>`;
     }
 
     function escHtml(str) {
       return String(str ?? '')
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+  </script>
+
+  <script>
+    // ── GeoGuesser game ──
+    const ALL_QUESTIONS = [
+      {
+        landmark: 'Buckingham Palace',
+        city: 'London',
+        emoji: '🏰',
+        img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Buckingham_Palace%2C_London_-_April_2009.jpg/480px-Buckingham_Palace%2C_London_-_April_2009.jpg',
+        options: ['London', 'Edinburgh', 'Paris', 'Dublin'],
+      },
+      {
+        landmark: 'Eiffel Tower',
+        city: 'Paris',
+        emoji: '🗼',
+        img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Tour_eiffel_at_sunrise_from_the_trocadero.jpg/480px-Tour_eiffel_at_sunrise_from_the_trocadero.jpg',
+        options: ['Paris', 'Berlin', 'Brussels', 'Rome'],
+      },
+      {
+        landmark: 'Colosseum',
+        city: 'Rome',
+        emoji: '🏟️',
+        img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Colosseo_2020.jpg/480px-Colosseo_2020.jpg',
+        options: ['Rome', 'Athens', 'Istanbul', 'Cairo'],
+      },
+      {
+        landmark: 'Statue of Liberty',
+        city: 'New York',
+        emoji: '🗽',
+        img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Statue_of_Liberty_7.jpg/480px-Statue_of_Liberty_7.jpg',
+        options: ['New York', 'Boston', 'Paris', 'Sydney'],
+      },
+      {
+        landmark: 'Taj Mahal',
+        city: 'Agra',
+        emoji: '🕌',
+        img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Taj_Mahal%2C_Agra%2C_India_edit3.jpg/480px-Taj_Mahal%2C_Agra%2C_India_edit3.jpg',
+        options: ['Agra', 'Delhi', 'Dubai', 'Istanbul'],
+      },
+      {
+        landmark: 'Sydney Opera House',
+        city: 'Sydney',
+        emoji: '🎭',
+        img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Sydney_Australia._%2821339175489%29.jpg/480px-Sydney_Australia._%2821339175489%29.jpg',
+        options: ['Sydney', 'Melbourne', 'Auckland', 'Singapore'],
+      },
+      {
+        landmark: 'Big Ben',
+        city: 'London',
+        emoji: '🕐',
+        img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Clock_Tower_-_Palace_of_Westminster%2C_London_-_May_2007.jpg/480px-Clock_Tower_-_Palace_of_Westminster%2C_London_-_May_2007.jpg',
+        options: ['London', 'Amsterdam', 'Brussels', 'Vienna'],
+      },
+      {
+        landmark: 'Sagrada Família',
+        city: 'Barcelona',
+        emoji: '⛪',
+        img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Sagrada_Familia_01.jpg/480px-Sagrada_Familia_01.jpg',
+        options: ['Barcelona', 'Madrid', 'Lisbon', 'Valencia'],
+      },
+      {
+        landmark: 'Burj Khalifa',
+        city: 'Dubai',
+        emoji: '🏙️',
+        img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Burj_Khalifa.jpg/480px-Burj_Khalifa.jpg',
+        options: ['Dubai', 'Abu Dhabi', 'Doha', 'Riyadh'],
+      },
+      {
+        landmark: 'Acropolis',
+        city: 'Athens',
+        emoji: '🏛️',
+        img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/The_Parthenon_in_Athens.jpg/480px-The_Parthenon_in_Athens.jpg',
+        options: ['Athens', 'Rome', 'Cairo', 'Tunis'],
+      },
+    ];
+
+    let questions = [];
+    let currentQ = 0;
+    let score = 0;
+    let answered = false;
+
+    function shuffle(arr) {
+      return [...arr].sort(() => Math.random() - 0.5);
     }
 
-    function getMockData(city) {
-      return {
-        city,
-        activities: [
-          { name: 'City History Museum', description: 'Explore centuries of local history through immersive exhibits and artefacts.', tip: 'Visit on weekday mornings to avoid crowds. Audio guides are free.' },
-          { name: 'Central Cathedral', description: 'A stunning example of Gothic architecture dominating the city skyline.', tip: 'Climb the tower for panoramic views — book tickets online to skip the queue.' },
-          { name: 'Old Town Quarter', description: 'Wander cobblestone streets lined with historic buildings and hidden courtyards.', tip: 'Join a free walking tour that departs from the main square at 10am and 2pm.' },
-          { name: 'Contemporary Art Gallery', description: 'Rotating exhibitions showcasing the best of local and international modern art.', tip: 'First Sunday of the month is free entry for everyone.' },
-          { name: 'Botanical Gardens', description: 'Over 5,000 plant species spread across beautifully landscaped themed gardens.', tip: 'The rose garden peaks in late spring — arrive early for the best light.' },
-        ],
-        restaurants: [
-          { name: 'The Local Table', cuisine: 'Contemporary Local', description: 'Seasonal dishes made with produce sourced directly from nearby farms.', tip: 'Book at least a week ahead for weekend dinners — it fills up fast.' },
-          { name: 'Spice Merchant', cuisine: 'Indian', description: 'Authentic regional curries and street food classics in a warm, buzzing atmosphere.', tip: 'The lunch thali is exceptional value and changes daily.' },
-          { name: 'Harbour Fish & Grill', cuisine: 'Seafood', description: 'Fresh catch of the day served with a view of the waterfront.', tip: 'Sit outside on the terrace for the best views — request it when booking.' },
-          { name: 'Pasta Nostra', cuisine: 'Italian', description: 'Hand-rolled pasta made fresh each morning paired with classic Italian wines.', tip: 'The truffle tagliatelle sells out quickly — ask if it is available when you arrive.' },
-          { name: 'Night Market Bites', cuisine: 'Street Food', description: 'A lively food hall with vendors serving dishes from a dozen different cuisines.', tip: 'Busiest on Friday and Saturday evenings — go midweek for a relaxed experience.' },
-        ],
-        walks: [
-          { name: 'Riverside Promenade', distance: '4 km loop', description: 'A flat, scenic path along the riverbank passing parks, bridges, and cafés.', tip: 'Best at sunrise or golden hour. Bikes can be hired at the main entrance.' },
-          { name: 'Forest Hill Trail', distance: '7 km out & back', description: 'A gentle woodland trail rising to a hilltop viewpoint overlooking the city.', tip: 'Wear sturdy shoes after rain. The summit café is open weekends only.' },
-          { name: 'Old City Walls Walk', distance: '3 km loop', description: 'Follow the original medieval city walls with interpretive signs along the way.', tip: 'Start at the North Gate — parking and bus stops nearby.' },
-          { name: 'Canal Towpath Run', distance: '10 km one way', description: 'A flat, traffic-free path alongside the historic canal — ideal for runners.', tip: 'Run early to beat walkers and cyclists. Water fountains at km 3 and km 7.' },
-          { name: 'Clifftop Coastal Path', distance: '5 km loop', description: 'Dramatic sea views along a well-maintained clifftop trail with wildflowers in season.', tip: 'Can be windy — bring a layer. Dogs welcome on leads.' },
-        ],
-      };
+    function startGame() {
+      questions = shuffle(ALL_QUESTIONS);
+      currentQ = 0;
+      score = 0;
+      answered = false;
+      showQuestion();
     }
+
+    function showQuestion() {
+      const q = questions[currentQ];
+      answered = false;
+      document.getElementById('gameProgress').textContent = `${currentQ + 1} / ${questions.length}`;
+
+      document.getElementById('gameBody').innerHTML = `
+        <div class="game-img-wrap">
+          <img
+            src="${escHtml(q.img)}"
+            alt="${escHtml(q.landmark)}"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+          />
+          <div class="img-fallback">${q.emoji}</div>
+        </div>
+        <div class="game-question">Where in the world is this?</div>
+        <div class="game-landmark">${escHtml(q.landmark)}</div>
+        <div class="game-options">
+          ${q.options.map(opt => `
+            <button class="game-opt" onclick="selectAnswer(this, '${escHtml(opt)}')">${escHtml(opt)}</button>
+          `).join('')}
+        </div>
+        <div class="game-feedback" id="gameFeedback"></div>
+      `;
+    }
+
+    function selectAnswer(btn, chosen) {
+      if (answered) return;
+      answered = true;
+      const q = questions[currentQ];
+      const isCorrect = chosen === q.city;
+      const allBtns = btn.closest('.game-options').querySelectorAll('.game-opt');
+
+      allBtns.forEach(b => {
+        b.disabled = true;
+        if (b.textContent === q.city) b.classList.add('correct');
+      });
+      if (!isCorrect) btn.classList.add('wrong');
+
+      if (isCorrect) score++;
+
+      const fb = document.getElementById('gameFeedback');
+      fb.className = 'game-feedback ' + (isCorrect ? 'ok' : 'bad');
+      fb.textContent = isCorrect ? '✓ Correct!' : `✗ It's ${q.city}`;
+
+      // Add next button
+      const nextLabel = currentQ + 1 < questions.length ? 'Next →' : 'See Results';
+      const nextEl = document.createElement('button');
+      nextEl.className = 'game-next';
+      nextEl.textContent = nextLabel;
+      nextEl.onclick = advanceGame;
+      document.getElementById('gameBody').appendChild(nextEl);
+    }
+
+    function advanceGame() {
+      currentQ++;
+      if (currentQ < questions.length) {
+        showQuestion();
+      } else {
+        showFinal();
+      }
+    }
+
+    function showFinal() {
+      document.getElementById('gameProgress').textContent = `Done!`;
+      const pct = score / questions.length;
+      const emoji = pct === 1 ? '🏆' : pct >= 0.7 ? '🌟' : pct >= 0.4 ? '🗺️' : '✈️';
+      const msg   = pct === 1 ? 'Perfect score!'
+                  : pct >= 0.7 ? 'Great geography skills!'
+                  : pct >= 0.4 ? 'Not bad, keep exploring!'
+                  : 'Time to travel more!';
+      document.getElementById('gameBody').innerHTML = `
+        <div class="game-final">
+          <div class="final-emoji">${emoji}</div>
+          <h3>${score} / ${questions.length} correct</h3>
+          <p>${msg}</p>
+          <button class="game-restart" onclick="startGame()">Play Again</button>
+        </div>
+      `;
+    }
+
+    startGame();
   </script>
 
 </body>
