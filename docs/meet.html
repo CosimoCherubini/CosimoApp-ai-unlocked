@@ -373,22 +373,93 @@
     }));
   }
 
+  // ── Geo data: flight hours & costs from major cities to each destination ──
+  const DESTINATIONS = [
+    { city: 'Lisbon',    country: 'Portugal',     emoji: '🇵🇹', desc: 'Sun-drenched hills, trams, pastel de nata and world-class seafood.', why: 'Excellent budget connections from most of Europe and the Americas.' },
+    { city: 'Amsterdam', country: 'Netherlands',  emoji: '🇳🇱', desc: 'Golden-age canals, world-class museums and a famously lively atmosphere.', why: 'Schiphol is one of the world\'s best-connected hubs — nearly everyone flies direct.' },
+    { city: 'Barcelona', country: 'Spain',        emoji: '🇪🇸', desc: 'Gaudí architecture, beach, tapas and vibrant nightlife in one city.', why: 'Strong budget airline coverage and a destination that sells itself.' },
+    { city: 'Prague',    country: 'Czechia',      emoji: '🇨🇿', desc: 'A fairy-tale old town, medieval castle and remarkably affordable prices.', why: 'Central European location keeps flight times short for most of the continent.' },
+    { city: 'Dubai',     country: 'UAE',          emoji: '🇦🇪', desc: 'Iconic skyline, desert adventures and tax-free shopping in the desert sun.', why: 'Emirates hub means near-direct flights from every corner of the world.' },
+    { city: 'Bangkok',   country: 'Thailand',     emoji: '🇹🇭', desc: 'Street food paradise, golden temples and some of the world\'s best nightlife.', why: 'Suvarnabhumi is the gateway to Asia — great value from East and West alike.' },
+    { city: 'New York',  country: 'USA',          emoji: '🇺🇸', desc: 'The city that never sleeps — iconic skyline, food scene and endless energy.', why: 'Ideal meeting point for friends coming from both sides of the Atlantic.' },
+    { city: 'Tokyo',     country: 'Japan',        emoji: '🇯🇵', desc: 'Unmatched food, cutting-edge culture and cherry blossoms in spring.', why: 'Worth the long haul — Haneda and Narita serve direct routes from across the globe.' },
+  ];
+
+  // [hours, £cost] from origin → destination (same order as DESTINATIONS array)
+  const FLIGHT_DATA = {
+    // city key (lowercase)  Lisbon  Amsterdam  Barcelona  Prague  Dubai  Bangkok  New York  Tokyo
+    'london':      [[2.5,80],  [1.2,60],  [2.2,70],  [2.0,65],  [7.0,280],  [11.5,420], [7.5,350],  [11.5,580]],
+    'paris':       [[2.5,80],  [1.5,70],  [2.0,75],  [2.0,80],  [6.5,270],  [11.5,420], [7.5,360],  [12.0,580]],
+    'berlin':      [[3.0,90],  [1.5,60],  [2.5,75],  [1.0,50],  [6.5,260],  [11.0,400], [9.0,380],  [11.5,560]],
+    'rome':        [[3.5,120], [2.5,100], [2.0,80],  [2.0,90],  [5.5,240],  [10.5,400], [9.0,420],  [12.0,580]],
+    'madrid':      [[1.5,60],  [2.5,90],  [1.5,55],  [3.0,100], [6.5,270],  [12.0,430], [8.5,370],  [13.0,600]],
+    'amsterdam':   [[2.5,90],  [0.0,0],   [2.5,80],  [1.5,65],  [7.0,250],  [11.5,410], [8.0,370],  [11.5,560]],
+    'moscow':      [[5.5,250], [3.5,180], [5.0,230], [3.0,130], [4.5,200],  [9.0,360],  [10.0,500], [9.0,420]],
+    'istanbul':    [[4.5,200], [3.5,160], [4.0,180], [3.0,140], [3.5,150],  [8.5,320],  [10.0,500], [11.0,480]],
+    'cairo':       [[5.5,240], [4.5,220], [5.0,230], [4.5,200], [3.5,140],  [8.0,300],  [12.0,580], [11.0,500]],
+    'new york':    [[7.0,380], [7.5,380], [7.5,400], [8.5,400], [12.0,600], [17.0,750], [0.0,0],    [14.0,700]],
+    'toronto':     [[7.5,380], [8.0,380], [8.0,400], [9.0,400], [13.0,580], [19.0,750], [1.5,100],  [14.0,650]],
+    'chicago':     [[9.0,450], [8.5,430], [9.0,450], [9.5,450], [13.0,600], [19.0,750], [2.0,120],  [13.0,620]],
+    'miami':       [[8.5,420], [9.0,430], [9.0,440], [10.0,450],[14.0,620], [19.0,750], [3.0,160],  [15.5,700]],
+    'los angeles': [[11.0,500],[10.0,450],[10.0,460],[11.0,470],[16.0,600], [17.0,650], [5.0,220],  [11.0,480]],
+    'sao paulo':   [[9.5,450], [11.0,520],[11.0,530],[12.0,540],[15.0,680], [22.0,900], [10.0,500], [22.0,900]],
+    'dubai':       [[7.0,280], [7.0,250], [6.5,260], [6.0,240], [0.0,0],    [6.0,220],  [13.0,580], [9.0,400]],
+    'mumbai':      [[10.0,450],[9.0,400], [9.0,420], [9.0,380], [3.0,120],  [4.5,200],  [15.0,650], [9.5,450]],
+    'singapore':   [[13.0,550],[12.0,500],[12.0,520],[12.0,510],[7.0,220],  [2.5,80],   [18.0,750], [7.0,280]],
+    'hong kong':   [[13.0,580],[12.0,520],[13.0,550],[12.0,510],[8.0,320],  [2.5,80],   [16.0,680], [4.0,150]],
+    'tokyo':       [[14.0,700],[11.5,600],[12.0,620],[11.5,600],[9.0,400],  [5.5,220],  [14.0,700], [0.0,0]],
+    'sydney':      [[22.0,900],[21.0,800],[21.0,820],[22.0,820],[14.0,550], [9.0,350],  [21.0,800], [9.5,400]],
+    'johannesburg':[[11.0,500],[11.0,480],[11.0,490],[11.0,490],[9.0,350],  [11.0,450], [16.0,700], [16.0,700]],
+  };
+
+  const DEST_KEYS = ['lisbon','amsterdam','barcelona','prague','dubai','bangkok','new york','tokyo'];
+
+  function resolveCity(input) {
+    const key = input.toLowerCase().trim();
+    if (FLIGHT_DATA[key]) return key;
+    // partial match
+    for (const k of Object.keys(FLIGHT_DATA)) {
+      if (key.includes(k) || k.includes(key)) return k;
+    }
+    // region fallbacks
+    const eu = ['london','paris'];
+    const us = ['new york'];
+    if (/\b(uk|england|britain|scotland)\b/.test(key)) return 'london';
+    if (/\b(us|usa|united states|america)\b/.test(key)) return 'new york';
+    return 'london'; // default
+  }
+
+  function computeLocalResults(friends) {
+    const scores = DESTINATIONS.map((dest, di) => {
+      const perFriend = friends.map(f => {
+        const hub  = resolveCity(f.city);
+        const data = FLIGHT_DATA[hub]?.[di] ?? [8, 350];
+        return { name: f.name, from: f.city, flightHours: data[0], estimatedCost: data[1] };
+      });
+      const totalCost     = perFriend.reduce((s, p) => s + p.estimatedCost, 0);
+      const maxFlightHours = Math.max(...perFriend.map(p => p.flightHours));
+      const avgFlightHours = perFriend.reduce((s, p) => s + p.flightHours, 0) / perFriend.length;
+      // value score: penalise high cost and long max flight
+      const costNorm  = Math.max(0, 100 - totalCost / (friends.length * 8));
+      const timeNorm  = Math.max(0, 100 - maxFlightHours * 5);
+      const valueScore = Math.round((costNorm * 0.5 + timeNorm * 0.5));
+      return { city: dest.city, country: dest.country, countryEmoji: dest.emoji,
+               totalCost, currency: 'GBP', maxFlightHours, avgFlightHours,
+               valueScore, description: dest.desc, whyMeet: dest.why, perFriend };
+    });
+    scores.sort((a, b) => b.valueScore - a.valueScore);
+    return scores.slice(0, 4);
+  }
+
   async function findMeetingPoints() {
     const friends = getFriends();
     const dateFrom = document.getElementById('dateFrom').value;
     const dateTo   = document.getElementById('dateTo').value;
 
-    // Basic validation
     for (const f of friends) {
-      if (!f.name || !f.city) {
-        showError('Please fill in every friend\'s name and city.');
-        return;
-      }
+      if (!f.name || !f.city) { showError('Please fill in every friend\'s name and city.'); return; }
     }
-    if (!dateFrom || !dateTo) {
-      showError('Please select travel dates.');
-      return;
-    }
+    if (!dateFrom || !dateTo) { showError('Please select travel dates.'); return; }
 
     const btn = document.getElementById('findBtn');
     btn.disabled = true;
@@ -400,21 +471,25 @@
         <p>Finding the best spots for your group…</p>
       </div>`;
 
+    // Try live server first; fall back to local computation
     try {
-      const res  = await fetch('/api/meet', {
+      const res = await fetch('/api/meet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ friends, dateFrom, dateTo }),
       });
-      const data = await res.json();
-      if (!res.ok) { showError(data.error || 'Something went wrong.'); return; }
-      renderResults(data.destinations || []);
-    } catch {
-      showError('Could not reach the server. Make sure it is running.');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Find Meeting Points';
-    }
+      if (res.ok) {
+        const data = await res.json();
+        renderResults(data.destinations || []);
+        btn.disabled = false; btn.textContent = 'Find Meeting Points';
+        return;
+      }
+    } catch { /* server not available — use local data */ }
+
+    // Client-side fallback with indicative data
+    renderResults(computeLocalResults(friends));
+    btn.disabled = false;
+    btn.textContent = 'Find Meeting Points';
   }
 
   function renderResults(destinations) {
