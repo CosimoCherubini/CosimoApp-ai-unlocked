@@ -609,7 +609,12 @@ Rules:
     const panel = document.getElementById('chatPanel');
     const isOpen = panel.classList.toggle('open');
     document.getElementById('chatFab').textContent = isOpen ? '✕' : '💬';
-    if (isOpen && chatHistory.length === 0) addBotMessage('Hi! I have full access to your analytics data. Ask me anything — or try one of the suggestions above.', null);
+    if (isOpen && chatHistory.length === 0) {
+      const hasKey = !!sessionStorage.getItem('anthropic_key');
+      addBotMessage(hasKey
+        ? 'Hi! I have full access to your analytics data. Ask me anything — or try one of the suggestions above.'
+        : 'Hi! I\'m running in demo mode — I can answer common questions about your data right now. Add your API key above to unlock fully custom questions and charts.', null);
+    }
   });
   document.getElementById('chatClose').addEventListener('click', () => {
     document.getElementById('chatPanel').classList.remove('open');
@@ -636,6 +641,78 @@ Rules:
     sendChat();
   }
 
+  function getMockResponse(q) {
+    const t = q.toLowerCase();
+
+    // Top cities — bar chart
+    if (t.includes('cit') || t.includes('top') || t.includes('popular') || t.includes('bar')) {
+      const top5 = cityRanking.slice(0, 5);
+      return {
+        message: `London leads with ${top5[0].count} searches, followed by Paris (${top5[1].count}) and Barcelona (${top5[2].count}). Here are the top 5 cities:`,
+        chart: {
+          type: 'bar',
+          data: {
+            labels: top5.map(c => c.city),
+            datasets: [{ label: 'Searches', data: top5.map(c => c.count), backgroundColor: '#1a56db', borderRadius: 6 }],
+          },
+          options: { scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } },
+        },
+      };
+    }
+
+    // Module CTR
+    if (t.includes('module') || t.includes('ctr') || t.includes('click') || t.includes('restaurant') || t.includes('activit') || t.includes('walk')) {
+      const top = Object.entries(clickMap).sort((a,b) => b[1]-a[1])[0];
+      return {
+        message: `"${moduleLabels[top[0]]}" has the highest CTR with ${top[1].toLocaleString()} clicks (${((top[1]/totalClicks)*100).toFixed(1)}% of all interactions). Restaurants consistently attract the most engagement.`,
+        chart: {
+          type: 'doughnut',
+          data: {
+            labels: ['Things To Do', 'Where To Eat', 'Walks & Runs'],
+            datasets: [{ data: [clickMap.activities, clickMap.restaurants, clickMap.walks], backgroundColor: ['#1a56db','#d97706','#059669'], borderWidth: 0 }],
+          },
+          options: { cutout: '60%', plugins: { legend: { position: 'bottom' } } },
+        },
+      };
+    }
+
+    // Trend / timeline
+    if (t.includes('trend') || t.includes('time') || t.includes('week') || t.includes('day') || t.includes('over')) {
+      const peak = timeline.reduce((best, v, i) => v > best.v ? { v, i } : best, { v: 0, i: 0 });
+      return {
+        message: `Searches have been growing steadily. The busiest day in the last 14 days was ${dayLabels[peak.i]} with ${peak.v} searches. Here's the full trend:`,
+        chart: {
+          type: 'line',
+          data: {
+            labels: dayLabels,
+            datasets: [{ label: 'Searches', data: timeline, borderColor: '#1a56db', backgroundColor: 'rgba(26,86,219,0.08)', fill: true, tension: 0.35, pointRadius: 3 }],
+          },
+          options: { scales: { y: { beginAtZero: true }, x: { ticks: { maxRotation: 45 } } }, plugins: { legend: { display: false } } },
+        },
+      };
+    }
+
+    // Most active day
+    if (t.includes('active') || t.includes('busiest') || t.includes('most search') || t.includes('peak')) {
+      const peak = timeline.reduce((best, v, i) => v > best.v ? { v, i } : best, { v: 0, i: 0 });
+      return { message: `The most active day was ${dayLabels[peak.i]} with ${peak.v} searches — that's ${((peak.v/totalSearches)*100).toFixed(1)}% of all searches in the last 14 days.`, chart: null };
+    }
+
+    // Recent / latest
+    if (t.includes('recent') || t.includes('latest') || t.includes('last search')) {
+      const latest = allRecent.slice(0, 3).map(e => `${e.city} at ${formatTs(e.ts)}`).join(', ');
+      return { message: `The 3 most recent searches were: ${latest}.`, chart: null };
+    }
+
+    // Total / summary
+    if (t.includes('total') || t.includes('summar') || t.includes('overview') || t.includes('stats')) {
+      return { message: `Total: ${totalSearches.toLocaleString()} searches across ${cityRanking.length} cities, and ${totalClicks.toLocaleString()} item clicks. Top city: ${topCity}. Top module: ${moduleLabels[topModule]}. Add your API key to ask more specific questions!`, chart: null };
+    }
+
+    // Fallback
+    return { message: `In demo mode I can answer questions about cities, module CTR, search trends, and recent activity. Add your Anthropic API key above to unlock free-form questions and fully custom charts!`, chart: null };
+  }
+
   async function sendChat() {
     const input = document.getElementById('chatInput');
     const text = input.value.trim();
@@ -649,8 +726,11 @@ Rules:
 
     const apiKey = sessionStorage.getItem('anthropic_key');
     if (!apiKey) {
+      await new Promise(r => setTimeout(r, 700)); // simulate latency
       removeTyping(typingId);
-      addBotMessage('Please add your Anthropic API key using the field above to enable AI responses.', null);
+      const mock = getMockResponse(text);
+      chatHistory.push({ role: 'assistant', content: JSON.stringify(mock) });
+      addBotMessage(mock.message, mock.chart);
       return;
     }
 
