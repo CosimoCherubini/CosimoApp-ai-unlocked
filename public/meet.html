@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Travel AI — Meet Me There</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f4f8;
+      color: #1a202c;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #1a56db 0%, #0e3a8a 100%);
+      color: white;
+      text-align: center;
+      padding: 2.5rem 1rem 3.5rem;
+      position: relative;
+    }
+    header h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 0.4rem; }
+    header p  { font-size: 1rem; opacity: 0.85; }
+    header .back {
+      position: absolute;
+      top: 1.25rem; left: 1.5rem;
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      font-size: 0.9rem;
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 6px;
+      padding: 0.35rem 0.8rem;
+    }
+    header .back:hover { background: rgba(255,255,255,0.1); }
+
+    /* ── Form card ── */
+    .form-wrap {
+      max-width: 700px;
+      margin: -1.75rem auto 2rem;
+      padding: 0 1.25rem;
+    }
+    .form-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+      padding: 1.75rem;
+    }
+    .form-card h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #4a5568;
+      margin-bottom: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.8rem;
+    }
+
+    /* Friends list */
+    .friends-list { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1rem; }
+    .friend-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .friend-row input {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.6rem 0.85rem;
+      font-size: 0.95rem;
+      color: #1a202c;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+    .friend-row input:focus { border-color: #1a56db; }
+    .friend-row input::placeholder { color: #a0aec0; }
+    .btn-remove {
+      background: none;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      width: 36px; height: 36px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      color: #a0aec0;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.15s, color 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-remove:hover { border-color: #e53e3e; color: #e53e3e; }
+    .btn-add {
+      background: none;
+      border: 1.5px dashed #cbd5e0;
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      font-size: 0.9rem;
+      color: #718096;
+      cursor: pointer;
+      width: 100%;
+      transition: border-color 0.15s, color 0.15s;
+      margin-bottom: 1.25rem;
+    }
+    .btn-add:hover { border-color: #1a56db; color: #1a56db; }
+
+    /* Dates row */
+    .dates-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .field label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #718096;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.35rem;
+    }
+    .field input[type="date"] {
+      width: 100%;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.6rem 0.85rem;
+      font-size: 0.95rem;
+      color: #1a202c;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .field input[type="date"]:focus { border-color: #1a56db; }
+
+    /* Find button */
+    .btn-find {
+      width: 100%;
+      background: #1a56db;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 0.9rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-find:hover:not(:disabled) { background: #1648bf; }
+    .btn-find:disabled { background: #93c5fd; cursor: not-allowed; }
+
+    /* ── Results ── */
+    .results-wrap {
+      max-width: 900px;
+      margin: 0 auto 3rem;
+      padding: 0 1.25rem;
+    }
+
+    .spinner-wrap {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+    .spinner {
+      width: 48px; height: 48px;
+      border: 4px solid #e2e8f0;
+      border-top-color: #1a56db;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner-wrap p { color: #718096; font-size: 1rem; }
+
+    .error-box {
+      background: #fff5f5;
+      border: 1px solid #fc8181;
+      border-radius: 10px;
+      padding: 1rem 1.5rem;
+      color: #c53030;
+      text-align: center;
+    }
+
+    /* Destination cards */
+    .dest-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 1.25rem;
+    }
+    .dest-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      overflow: hidden;
+    }
+    .dest-card.best { box-shadow: 0 4px 20px rgba(26,86,219,0.2); border: 2px solid #1a56db; }
+
+    .dest-header {
+      background: linear-gradient(135deg, #1a56db 0%, #0e3a8a 100%);
+      color: white;
+      padding: 1.1rem 1.25rem 1rem;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .dest-header .city-name {
+      font-size: 1.4rem;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .dest-header .country {
+      font-size: 0.85rem;
+      opacity: 0.8;
+      margin-top: 0.15rem;
+    }
+    .best-badge {
+      background: #fbbf24;
+      color: #78350f;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 0.25rem 0.6rem;
+      border-radius: 20px;
+      white-space: nowrap;
+      letter-spacing: 0.04em;
+      margin-top: 0.15rem;
+    }
+
+    .dest-stats {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid #f0f4f8;
+    }
+    .stat {
+      flex: 1;
+      padding: 0.9rem 1.1rem;
+      border-right: 1px solid #f0f4f8;
+    }
+    .stat:last-child { border-right: none; }
+    .stat-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: #a0aec0; font-weight: 600; margin-bottom: 0.2rem; }
+    .stat-value { font-size: 1.5rem; font-weight: 800; color: #1a202c; line-height: 1; }
+    .stat-sub   { font-size: 0.75rem; color: #a0aec0; margin-top: 0.1rem; }
+
+    .dest-body { padding: 1.1rem 1.25rem; }
+    .dest-desc { font-size: 0.9rem; color: #4a5568; line-height: 1.5; margin-bottom: 0.6rem; }
+    .dest-why  {
+      font-size: 0.83rem;
+      color: #718096;
+      background: #f7fafc;
+      border-left: 3px solid #1a56db;
+      padding: 0.4rem 0.75rem;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 1rem;
+      line-height: 1.45;
+    }
+
+    /* Breakdown table */
+    .breakdown-toggle {
+      background: none;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.45rem 0.9rem;
+      font-size: 0.83rem;
+      font-weight: 600;
+      color: #718096;
+      cursor: pointer;
+      width: 100%;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .breakdown-toggle:hover { border-color: #1a56db; color: #1a56db; }
+    .breakdown-table {
+      display: none;
+      margin-top: 0.75rem;
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .breakdown-table.open { display: table; }
+    .breakdown-table th {
+      text-align: left;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #a0aec0;
+      font-weight: 600;
+      padding: 0.4rem 0.5rem;
+      border-bottom: 1px solid #f0f4f8;
+    }
+    .breakdown-table td {
+      padding: 0.45rem 0.5rem;
+      color: #4a5568;
+      border-bottom: 1px solid #f0f4f8;
+    }
+    .breakdown-table tr:last-child td { border-bottom: none; }
+    .breakdown-table td:nth-child(3),
+    .breakdown-table td:nth-child(4) { font-weight: 600; color: #1a202c; }
+
+    @media (max-width: 500px) {
+      .friend-row { grid-template-columns: 1fr 1fr auto; }
+      .dest-grid  { grid-template-columns: 1fr; }
+      .dates-row  { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="back">← Home</a>
+  <h1>✈️ Meet Me There</h1>
+  <p>Find the perfect city for your group — best balance of price &amp; flight time</p>
+</header>
+
+<div class="form-wrap">
+  <div class="form-card">
+    <h2>Who's coming &amp; where from?</h2>
+
+    <div class="friends-list" id="friendsList">
+      <!-- rows injected by JS -->
+    </div>
+    <button class="btn-add" id="addFriendBtn" onclick="addFriend()">＋ Add another friend</button>
+
+    <div class="dates-row">
+      <div class="field">
+        <label for="dateFrom">Travel from</label>
+        <input type="date" id="dateFrom" />
+      </div>
+      <div class="field">
+        <label for="dateTo">Travel to</label>
+        <input type="date" id="dateTo" />
+      </div>
+    </div>
+
+    <button class="btn-find" id="findBtn" onclick="findMeetingPoints()">Find Meeting Points</button>
+  </div>
+</div>
+
+<div class="results-wrap" id="results"></div>
+
+<script>
+  let friendCount = 0;
+
+  function addFriend(defaultName = '', defaultCity = '') {
+    const list = document.getElementById('friendsList');
+    if (list.children.length >= 8) return;
+
+    const id = ++friendCount;
+    const row = document.createElement('div');
+    row.className = 'friend-row';
+    row.dataset.id = id;
+    row.innerHTML = `
+      <input type="text" placeholder="Name (e.g. Alice)" value="${escAttr(defaultName)}" data-field="name" />
+      <input type="text" placeholder="City (e.g. London)" value="${escAttr(defaultCity)}" data-field="city" />
+      <button class="btn-remove" onclick="removeFriend(${id})" title="Remove">×</button>
+    `;
+    list.appendChild(row);
+
+    if (list.children.length >= 8) {
+      document.getElementById('addFriendBtn').style.display = 'none';
+    }
+  }
+
+  function removeFriend(id) {
+    const list = document.getElementById('friendsList');
+    if (list.children.length <= 2) return; // keep at least 2
+    const row = list.querySelector(`[data-id="${id}"]`);
+    if (row) row.remove();
+    document.getElementById('addFriendBtn').style.display = '';
+  }
+
+  function getFriends() {
+    const rows = document.getElementById('friendsList').querySelectorAll('.friend-row');
+    return Array.from(rows).map(row => ({
+      name: row.querySelector('[data-field="name"]').value.trim(),
+      city: row.querySelector('[data-field="city"]').value.trim(),
+    }));
+  }
+
+  async function findMeetingPoints() {
+    const friends = getFriends();
+    const dateFrom = document.getElementById('dateFrom').value;
+    const dateTo   = document.getElementById('dateTo').value;
+
+    // Basic validation
+    for (const f of friends) {
+      if (!f.name || !f.city) {
+        showError('Please fill in every friend\'s name and city.');
+        return;
+      }
+    }
+    if (!dateFrom || !dateTo) {
+      showError('Please select travel dates.');
+      return;
+    }
+
+    const btn = document.getElementById('findBtn');
+    btn.disabled = true;
+    btn.textContent = 'Searching…';
+
+    document.getElementById('results').innerHTML = `
+      <div class="spinner-wrap">
+        <div class="spinner"></div>
+        <p>Finding the best spots for your group…</p>
+      </div>`;
+
+    try {
+      const res  = await fetch('/api/meet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ friends, dateFrom, dateTo }),
+      });
+      const data = await res.json();
+      if (!res.ok) { showError(data.error || 'Something went wrong.'); return; }
+      renderResults(data.destinations || []);
+    } catch {
+      showError('Could not reach the server. Make sure it is running.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Find Meeting Points';
+    }
+  }
+
+  function renderResults(destinations) {
+    if (!destinations.length) {
+      showError('No destinations found. Try different origins.');
+      return;
+    }
+
+    const cards = destinations.map((d, i) => {
+      const isBest = i === 0;
+      const hours = d.maxFlightHours;
+      const hDisplay = `${Math.floor(hours)}h ${Math.round((hours % 1) * 60)}m max`;
+      const rows = (d.perFriend || []).map(p => `
+        <tr>
+          <td>${escHtml(p.name)}</td>
+          <td>${escHtml(p.from)}</td>
+          <td>£${p.estimatedCost}</td>
+          <td>${p.flightHours}h</td>
+        </tr>`).join('');
+
+      return `
+        <div class="dest-card ${isBest ? 'best' : ''}">
+          <div class="dest-header">
+            <div>
+              <div class="city-name">${escHtml(d.countryEmoji || '')} ${escHtml(d.city)}</div>
+              <div class="country">${escHtml(d.country)}</div>
+            </div>
+            ${isBest ? '<div class="best-badge">Best Value ✦</div>' : ''}
+          </div>
+          <div class="dest-stats">
+            <div class="stat">
+              <div class="stat-label">Total cost</div>
+              <div class="stat-value">£${d.totalCost}</div>
+              <div class="stat-sub">all friends</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Max flight</div>
+              <div class="stat-value">${Math.floor(hours)}h ${Math.round((hours % 1)*60)}m</div>
+              <div class="stat-sub">longest leg</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Value score</div>
+              <div class="stat-value">${d.valueScore}</div>
+              <div class="stat-sub">out of 100</div>
+            </div>
+          </div>
+          <div class="dest-body">
+            <div class="dest-desc">${escHtml(d.description)}</div>
+            <div class="dest-why">${escHtml(d.whyMeet)}</div>
+            <button class="breakdown-toggle" onclick="toggleBreakdown(this)">
+              ▸ See per-person breakdown
+            </button>
+            <table class="breakdown-table">
+              <thead>
+                <tr>
+                  <th>Friend</th><th>From</th><th>Est. Cost</th><th>Flight</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('results').innerHTML = `<div class="dest-grid">${cards}</div>`;
+  }
+
+  function toggleBreakdown(btn) {
+    const table = btn.nextElementSibling;
+    const open  = table.classList.toggle('open');
+    btn.textContent = open ? '▾ Hide breakdown' : '▸ See per-person breakdown';
+  }
+
+  function showError(msg) {
+    document.getElementById('results').innerHTML = `<div class="error-box">${escHtml(msg)}</div>`;
+  }
+
+  function escHtml(str) {
+    return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function escAttr(str) {
+    return String(str ?? '').replace(/"/g, '&quot;');
+  }
+
+  // Set default dates (today + 30 days)
+  const today = new Date();
+  const later = new Date(today); later.setDate(later.getDate() + 30);
+  const fmt   = d => d.toISOString().split('T')[0];
+  document.getElementById('dateFrom').value = fmt(today);
+  document.getElementById('dateTo').value   = fmt(later);
+
+  // Start with 2 friend rows
+  addFriend('', '');
+  addFriend('', '');
+</script>
+
+</body>
+</html>

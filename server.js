@@ -145,10 +145,119 @@ Metrics should be specific to this exact feature and goal — not generic.`,
   }
 });
 
+// ── Meet Me There ────────────────────────────────────────────────────────────
+app.post('/api/meet', async (req, res) => {
+  const { friends, dateFrom, dateTo } = req.body;
+
+  if (!Array.isArray(friends) || friends.length < 2 || friends.length > 8) {
+    return res.status(400).json({ error: 'Provide between 2 and 8 friends.' });
+  }
+  if (!dateFrom || !dateTo) {
+    return res.status(400).json({ error: 'dateFrom and dateTo are required.' });
+  }
+  for (const f of friends) {
+    if (!f.name || !f.city) return res.status(400).json({ error: 'Each friend needs a name and city.' });
+  }
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    return res.json(getMockMeetData(friends));
+  }
+
+  const client = new Anthropic({ apiKey });
+  const friendList = friends.map(f => `${f.name} (${f.city})`).join(', ');
+  const prompt = `You are an expert flight and travel analyst. A group of friends wants to meet somewhere and need the best destination that minimises both total flight cost and the longest individual flight time.
+
+Friends and their origin cities: ${friendList}
+Travel dates: ${dateFrom} to ${dateTo}
+
+Suggest exactly 4 meeting destinations. For each destination provide realistic estimated flight costs (economy, budget airlines where available) and flight durations from each origin city.
+
+Return ONLY this raw JSON (no markdown):
+
+{
+  "destinations": [
+    {
+      "city": "Lisbon",
+      "country": "Portugal",
+      "countryEmoji": "🇵🇹",
+      "totalCost": 820,
+      "currency": "GBP",
+      "maxFlightHours": 3.5,
+      "avgFlightHours": 2.8,
+      "valueScore": 91,
+      "description": "One sentence about what makes this city great to visit.",
+      "whyMeet": "One sentence on why this is a great meeting point for this specific group.",
+      "perFriend": [
+        { "name": "Alice", "from": "London", "estimatedCost": 120, "flightHours": 2.5 }
+      ]
+    }
+  ]
+}
+
+Rules:
+- totalCost = sum of all perFriend estimatedCost values
+- valueScore = 0-100 score balancing low cost and short max flight time (100 = perfect)
+- Sort destinations by valueScore descending
+- perFriend must include every friend from the input list
+- Only return the JSON, nothing else`;
+
+  try {
+    const message = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 2048,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    const text = message.content[0].text.trim();
+    const data = JSON.parse(text);
+    res.json(data);
+  } catch (err) {
+    if (err instanceof SyntaxError) {
+      res.status(500).json({ error: 'Failed to parse AI response. Please try again.' });
+    } else {
+      res.status(500).json({ error: err.message || 'Something went wrong.' });
+    }
+  }
+});
+
 app.listen(PORT, () => {
   const mode = process.env.ANTHROPIC_API_KEY ? 'Live (Claude AI)' : 'Demo (mock data)';
   console.log(`Travel AI running at http://localhost:${PORT} — ${mode}`);
 });
+
+function getMockMeetData(friends) {
+  const names = friends.map(f => f.name);
+  const costPer = Math.round(150 + Math.random() * 100);
+  return {
+    destinations: [
+      {
+        city: 'Lisbon', country: 'Portugal', countryEmoji: '🇵🇹',
+        totalCost: costPer * friends.length,
+        currency: 'GBP', maxFlightHours: 3.5, avgFlightHours: 2.6, valueScore: 94,
+        description: 'A sun-drenched city of hilltop viewpoints, trams and world-class pastéis de nata.',
+        whyMeet: 'Central enough for most European cities with excellent budget flight connections.',
+        perFriend: friends.map((f, i) => ({ name: f.name, from: f.city, estimatedCost: costPer - i * 10, flightHours: 2 + i * 0.4 })),
+      },
+      {
+        city: 'Amsterdam', country: 'Netherlands', countryEmoji: '🇳🇱',
+        totalCost: (costPer + 30) * friends.length,
+        currency: 'GBP', maxFlightHours: 4.2, avgFlightHours: 3.1, valueScore: 84,
+        description: 'Iconic canals, world-class museums and a famously welcoming atmosphere.',
+        whyMeet: 'Schiphol is one of Europe\'s best-connected hubs with flights from almost everywhere.',
+        perFriend: friends.map((f, i) => ({ name: f.name, from: f.city, estimatedCost: costPer + 30 - i * 8, flightHours: 2.5 + i * 0.45 })),
+      },
+      {
+        city: 'Barcelona', country: 'Spain', countryEmoji: '🇪🇸',
+        totalCost: (costPer + 50) * friends.length,
+        currency: 'GBP', maxFlightHours: 4.8, avgFlightHours: 3.4, valueScore: 78,
+        description: 'Gaudí architecture, beach, tapas and vibrant nightlife — something for everyone.',
+        whyMeet: 'Strong budget airline coverage and a city that needs little convincing to visit.',
+        perFriend: friends.map((f, i) => ({ name: f.name, from: f.city, estimatedCost: costPer + 50 - i * 12, flightHours: 3 + i * 0.5 })),
+      },
+    ],
+  };
+}
 
 function getMockData(city) {
   return {
