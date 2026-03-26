@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analytics Generator — Travel AI</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f4f8;
+      color: #1a202c;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #7c3aed 0%, #4f1d96 100%);
+      color: white;
+      padding: 2rem 2rem 3rem;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    header h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 0.25rem; }
+    header p  { font-size: 0.95rem; opacity: 0.8; }
+    header a  {
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      font-size: 0.9rem;
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 6px;
+      padding: 0.4rem 0.9rem;
+      white-space: nowrap;
+    }
+    header a:hover { background: rgba(255,255,255,0.1); }
+
+    .main {
+      max-width: 760px;
+      margin: -1.5rem auto 3rem;
+      padding: 0 1.5rem;
+    }
+
+    /* ── Generator card ── */
+    .gen-card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+      overflow: hidden;
+    }
+    .gen-card-header {
+      background: linear-gradient(135deg, #7c3aed, #4f1d96);
+      color: white;
+      padding: 1.5rem 2rem;
+    }
+    .gen-card-header h2 { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .gen-card-header p  { font-size: 0.85rem; opacity: 0.8; }
+
+    .gen-form { padding: 2rem; }
+
+    .field { margin-bottom: 1.25rem; }
+    .field label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #718096;
+      margin-bottom: 0.5rem;
+    }
+    .field input {
+      width: 100%;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      font-size: 1rem;
+      font-family: inherit;
+      color: #1a202c;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .field input:focus { border-color: #7c3aed; }
+    .field input::placeholder { color: #a0aec0; }
+
+    .examples {
+      margin-top: 0.4rem;
+      font-size: 0.78rem;
+      color: #a0aec0;
+    }
+    .examples span {
+      background: #f0f4f8;
+      border-radius: 4px;
+      padding: 0.1rem 0.4rem;
+      margin-right: 0.3rem;
+      font-style: italic;
+    }
+
+    .gen-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #7c3aed, #4f1d96);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 1rem;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      margin-top: 0.5rem;
+    }
+    .gen-btn:hover:not(:disabled)  { opacity: 0.9; transform: translateY(-1px); }
+    .gen-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* ── Result states ── */
+    .result { padding: 0 2rem 2rem; display: none; }
+    .result.visible { display: block; }
+
+    .result-new {
+      background: #f0fff4;
+      border: 1px solid #9ae6b4;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .result-exists {
+      background: #ebf8ff;
+      border: 1px solid #90cdf4;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .result-error {
+      background: #fff5f5;
+      border: 1px solid #feb2b2;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      color: #c53030;
+    }
+    .result-icon { font-size: 2rem; flex-shrink: 0; }
+    .result-text { flex: 1; min-width: 0; }
+    .result-title { font-weight: 700; font-size: 1rem; color: #276749; margin-bottom: 0.2rem; }
+    .result-exists .result-title { color: #1a56db; }
+    .result-sub   { font-size: 0.85rem; color: #4a5568; word-break: break-all; }
+    .result-link  {
+      display: inline-block;
+      background: #276749;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      padding: 0.55rem 1.1rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .result-exists .result-link { background: #1a56db; }
+    .result-link:hover { opacity: 0.9; }
+
+    /* ── Loading ── */
+    .loading {
+      padding: 0 2rem 2rem;
+      display: none;
+      text-align: center;
+    }
+    .loading.visible { display: block; }
+    .loading-spinner {
+      width: 44px; height: 44px;
+      border: 4px solid #e2e8f0;
+      border-top-color: #7c3aed;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading p { color: #718096; font-size: 0.95rem; }
+    .loading-steps { list-style: none; margin-top: 0.75rem; text-align: left; max-width: 320px; margin-left: auto; margin-right: auto; }
+    .loading-steps li {
+      font-size: 0.82rem;
+      color: #a0aec0;
+      padding: 0.25rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .loading-steps li.active { color: #7c3aed; font-weight: 600; }
+    .loading-steps li.done   { color: #38a169; }
+
+    /* ── History ── */
+    .history {
+      margin-top: 1.5rem;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      overflow: hidden;
+    }
+    .history-header {
+      padding: 1.1rem 1.5rem;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border-bottom: 1px solid #f0f4f8;
+      color: #2d3748;
+    }
+    .history-empty {
+      padding: 1.5rem;
+      text-align: center;
+      color: #a0aec0;
+      font-size: 0.9rem;
+    }
+    .history-list { list-style: none; }
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.85rem 1.5rem;
+      border-bottom: 1px solid #f0f4f8;
+      font-size: 0.9rem;
+    }
+    .history-item:last-child { border-bottom: none; }
+    .history-dot { width: 8px; height: 8px; border-radius: 50%; background: #7c3aed; flex-shrink: 0; }
+    .history-name { flex: 1; font-weight: 600; color: #1a202c; }
+    .history-link { color: #7c3aed; text-decoration: none; font-size: 0.82rem; font-weight: 600; }
+    .history-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📊 Analytics Generator</h1>
+    <p>Define KPIs and generate an analytics page for any feature</p>
+  </div>
+  <a href="index.html">← Back to App</a>
+</header>
+
+<div class="main">
+  <div class="gen-card">
+    <div class="gen-card-header">
+      <h2>Generate Feature Analytics</h2>
+      <p>Claude will define success metrics and build a live analytics page tailored to your feature</p>
+    </div>
+
+    <div class="gen-form">
+      <div class="field">
+        <label>Feature</label>
+        <input type="text" id="featureInput" placeholder="e.g. GeoGuesser game, City search, Hotels filter…" autocomplete="off" />
+        <div class="examples">e.g. <span>GeoGuesser game</span> <span>City search</span> <span>Hotel filter</span></div>
+      </div>
+      <div class="field">
+        <label>Goal</label>
+        <input type="text" id="goalInput" placeholder="e.g. entertain users, help users find destinations…" autocomplete="off" />
+        <div class="examples">e.g. <span>entertain users</span> <span>increase search conversion</span></div>
+      </div>
+      <button class="gen-btn" id="genBtn" onclick="generate()">✨ Generate Analytics Page</button>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading" id="loading">
+      <div class="loading-spinner"></div>
+      <p>Claude is designing your analytics page…</p>
+      <ul class="loading-steps" id="loadingSteps">
+        <li id="step1">⏳ Analysing feature &amp; goal</li>
+        <li id="step2">⏳ Defining success metrics</li>
+        <li id="step3">⏳ Building analytics page</li>
+      </ul>
+    </div>
+
+    <!-- Result -->
+    <div class="result" id="result"></div>
+  </div>
+
+  <!-- Previously generated pages -->
+  <div class="history">
+    <div class="history-header">📁 Previously generated pages</div>
+    <div id="historyBody">
+      <p class="history-empty">No pages generated yet — create your first one above.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const HISTORY_KEY = 'analytics_generated_pages';
+
+  // ── Load history ──────────────────────────────────────────────────────────
+  function loadHistory() {
+    const pages = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    const body = document.getElementById('historyBody');
+    if (pages.length === 0) {
+      body.innerHTML = '<p class="history-empty">No pages generated yet — create your first one above.</p>';
+      return;
+    }
+    body.innerHTML = `<ul class="history-list">${pages.map(p => `
+      <li class="history-item">
+        <span class="history-dot"></span>
+        <span class="history-name">${escHtml(p.feature)}</span>
+        <a class="history-link" href="${escHtml(p.url)}" target="_blank">View Analytics →</a>
+      </li>`).join('')}
+    </ul>`;
+  }
+
+  function saveToHistory(feature, url) {
+    const pages = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    const existing = pages.find(p => p.url === url);
+    if (!existing) {
+      pages.unshift({ feature, url, ts: Date.now() });
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(pages.slice(0, 20)));
+    }
+    loadHistory();
+  }
+
+  // ── Generate ──────────────────────────────────────────────────────────────
+  async function generate() {
+    const feature = document.getElementById('featureInput').value.trim();
+    const goal    = document.getElementById('goalInput').value.trim();
+
+    if (!feature) { document.getElementById('featureInput').focus(); return; }
+    if (!goal)    { document.getElementById('goalInput').focus();    return; }
+
+    // UI state: loading
+    document.getElementById('genBtn').disabled = true;
+    document.getElementById('result').className = 'result';
+    document.getElementById('result').innerHTML = '';
+    document.getElementById('loading').className = 'loading visible';
+    animateSteps();
+
+    try {
+      const res  = await fetch('/api/analytics/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feature, goal }),
+      });
+      const data = await res.json();
+
+      document.getElementById('loading').className = 'loading';
+
+      if (!res.ok) {
+        showError(data.error || 'Something went wrong. Make sure the server is running with ANTHROPIC_API_KEY set.');
+        return;
+      }
+
+      saveToHistory(data.feature, data.url);
+
+      const resultEl = document.getElementById('result');
+      resultEl.className = 'result visible';
+
+      if (data.exists) {
+        resultEl.innerHTML = `
+          <div class="result-exists">
+            <span class="result-icon">🔗</span>
+            <div class="result-text">
+              <div class="result-title" style="color:#1a56db">Analytics page already exists</div>
+              <div class="result-sub">${escHtml(data.url)}</div>
+            </div>
+            <a class="result-link" href="${escHtml(data.url)}" target="_blank">View Analytics →</a>
+          </div>`;
+      } else {
+        resultEl.innerHTML = `
+          <div class="result-new">
+            <span class="result-icon">🎉</span>
+            <div class="result-text">
+              <div class="result-title">Analytics page created!</div>
+              <div class="result-sub">${escHtml(data.url)}</div>
+            </div>
+            <a class="result-link" href="${escHtml(data.url)}" target="_blank">View Analytics →</a>
+          </div>`;
+      }
+    } catch (err) {
+      document.getElementById('loading').className = 'loading';
+      showError('Could not reach the server. Make sure it is running.');
+    } finally {
+      document.getElementById('genBtn').disabled = false;
+    }
+  }
+
+  function showError(msg) {
+    const resultEl = document.getElementById('result');
+    resultEl.className = 'result visible';
+    resultEl.innerHTML = `<div class="result-error">⚠️ ${escHtml(msg)}</div>`;
+  }
+
+  // ── Animate loading steps ──────────────────────────────────────────────────
+  function animateSteps() {
+    const steps = ['step1', 'step2', 'step3'];
+    const labels = ['Analysing feature & goal', 'Defining success metrics', 'Building analytics page'];
+    let i = 0;
+    steps.forEach(id => {
+      const el = document.getElementById(id);
+      el.className = '';
+      el.textContent = `⏳ ${labels[steps.indexOf(id)]}`;
+    });
+    const interval = setInterval(() => {
+      if (i > 0) {
+        const prev = document.getElementById(steps[i - 1]);
+        prev.className = 'done';
+        prev.textContent = `✓ ${labels[i - 1]}`;
+      }
+      if (i < steps.length) {
+        document.getElementById(steps[i]).className = 'active';
+        document.getElementById(steps[i]).textContent = `▶ ${labels[i]}`;
+        i++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 4000);
+  }
+
+  // ── Enter key support ─────────────────────────────────────────────────────
+  ['featureInput', 'goalInput'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') generate();
+    });
+  });
+
+  function escHtml(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  loadHistory();
+</script>
+
+</body>
+</html>

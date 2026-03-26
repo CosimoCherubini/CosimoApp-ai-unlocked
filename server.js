@@ -1,6 +1,6 @@
 import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -65,6 +65,83 @@ Rules:
     } else {
       res.status(500).json({ error: err.message || 'Something went wrong.' });
     }
+  }
+});
+
+// ── Analytics page generator ────────────────────────────────────────────────
+app.post('/api/analytics/generate', async (req, res) => {
+  const { feature, goal } = req.body;
+
+  if (!feature || !goal || typeof feature !== 'string' || typeof goal !== 'string') {
+    return res.status(400).json({ error: 'feature and goal are required.' });
+  }
+
+  const slug = feature.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const analyticsDir = join(__dirname, 'public', 'analytics');
+  const filePath = join(analyticsDir, `${slug}.html`);
+  const publicUrl = `/analytics/${slug}.html`;
+
+  // Page already exists — just return the link
+  if (existsSync(filePath)) {
+    return res.json({ exists: true, url: publicUrl, feature: feature.trim() });
+  }
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    return res.status(400).json({ error: 'Set ANTHROPIC_API_KEY to generate analytics pages.' });
+  }
+
+  const client = new Anthropic({ apiKey });
+
+  const systemPrompt = `You are an analytics page generator for a travel app called Travel AI.
+Generate complete, self-contained HTML analytics pages for product features.
+
+Design system (match exactly):
+- Background: #f0f4f8 | Cards: white, border-radius:16px, box-shadow:0 2px 12px rgba(0,0,0,0.07)
+- Primary blue: #1a56db | Dark blue: #0e3a8a | Amber: #d97706 | Green: #059669 | Purple: #7c3aed
+- Font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif
+- Header: gradient(135deg, #1a56db, #0e3a8a), white text, back link to ../index.html
+- KPI cards: white, .kpi-label (0.8rem uppercase gray #718096), .kpi-value (2.2rem bold #1a202c), .kpi-sub (0.82rem #a0aec0)
+- KPI grid: display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem
+- Charts grid: display:grid; grid-template-columns:1fr 1fr; gap:1.5rem (1fr on mobile)
+- Chart.js: use CDN https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js
+
+Page structure:
+1. <header> with feature name, back link
+2. .dashboard > .kpi-row (4-6 KPIs with seed numbers)
+3. .charts-grid with 2-3 charts
+4. A data note: "Demo data — connect your feature's event tracking to populate this with real user data"
+
+Return ONLY the complete HTML document, nothing else.`;
+
+  try {
+    const message = await client.messages.create({
+      model: 'claude-opus-4-6',
+      max_tokens: 16000,
+      thinking: { type: 'adaptive' },
+      system: systemPrompt,
+      messages: [{
+        role: 'user',
+        content: `Feature: "${feature.trim()}"
+Goal: "${goal.trim()}"
+
+Generate an analytics page that tracks the most meaningful success metrics for this feature given its goal.
+Include realistic seed data showing what healthy metrics look like.
+Metrics should be specific to this exact feature and goal — not generic.`,
+      }],
+    });
+
+    const html = message.content.find(b => b.type === 'text')?.text?.trim() ?? '';
+    if (!html.startsWith('<!')) {
+      throw new Error('Claude returned unexpected content');
+    }
+
+    mkdirSync(analyticsDir, { recursive: true });
+    writeFileSync(filePath, html, 'utf8');
+
+    res.json({ exists: false, url: publicUrl, feature: feature.trim() });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Failed to generate analytics page.' });
   }
 });
 
